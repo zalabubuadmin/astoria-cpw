@@ -3632,14 +3632,24 @@ document.getElementById('lock-password')?.addEventListener('keydown', e => {
 let valetData = {};
 let currentValetSpotNum = null;
 
-// Layout matching the physical map photo
-// Section 1: spots 4-9 (top right grid)
-// Section 2: spots 62-69 (bottom right grid)  
-// Section 3: spots 50-55 (bottom left grid)
+// Layout exactly matching the physical valet map photo
+// Map is divided into 4 quadrants:
+//   Top-left: NOTES area   |  Top-right: spots 5,4 / 6,7 / 9,8
+//   Bot-left: 53,54,55     |  Bot-right: 62,63 / 65,64 / 66,67 / 69,68
+//                              52,51,50
 const VALET_LAYOUT = [
-  { label: 'Section 1', spots: [4,5,6,7,8,9],         cols: 6 },
-  { label: 'Section 2', spots: [62,63,64,65,66,67,68,69], cols: 4 },
-  { label: 'Section 3', spots: [50,51,52,53,54,55],    cols: 3 },
+  {
+    // Full-width top row: Notes area (left) + Section 1 spots (right)
+    type: 'split',
+    left: { label: 'Notes', isNotes: true },
+    right: { label: 'Section 1 — Spots 4–9', spots: [5,4,6,7,9,8], cols: 2 }
+  },
+  {
+    // Full-width bottom row: Section 3 (left) + Section 2 (right)
+    type: 'split',
+    left:  { label: 'Section 3 — Spots 50–55', spots: [53,54,55,52,51,50], cols: 3 },
+    right: { label: 'Section 2 — Spots 62–69', spots: [62,63,65,64,66,67,69,68], cols: 2 }
+  }
 ];
 
 async function initValetMap() {
@@ -3666,28 +3676,45 @@ function renderValetMap() {
   if (summary) summary.innerHTML = `<span style="color:var(--gold);font-weight:500">${occupied}</span> occupied · <span style="color:var(--green)">${total - occupied}</span> available`;
 
   grid.innerHTML = `
-    <!-- Stats -->
+    <!-- Stats strip -->
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <div style="padding:10px 18px;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:9px;min-width:90px;text-align:center">
-        <div style="font-family:'Geist Mono',monospace;font-size:30px;font-weight:300;color:var(--gold);line-height:1">${occupied}</div>
-        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px">Occupied</div>
+      <div style="padding:8px 16px;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:9px;text-align:center">
+        <div style="font-family:'Geist Mono',monospace;font-size:26px;font-weight:300;color:var(--gold);line-height:1">${occupied}</div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px">Occupied</div>
       </div>
-      <div style="padding:10px 18px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;min-width:90px;text-align:center">
-        <div style="font-family:'Geist Mono',monospace;font-size:30px;font-weight:300;color:var(--green);line-height:1">${total - occupied}</div>
-        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px">Available</div>
+      <div style="padding:8px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;text-align:center">
+        <div style="font-family:'Geist Mono',monospace;font-size:26px;font-weight:300;color:var(--green);line-height:1">${total-occupied}</div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px">Available</div>
       </div>
-      <div style="padding:10px 18px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;min-width:90px;text-align:center">
-        <div style="font-family:'Geist Mono',monospace;font-size:30px;font-weight:300;color:var(--text);line-height:1">${total}</div>
-        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px">Total</div>
+      <div style="padding:8px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;text-align:center">
+        <div style="font-family:'Geist Mono',monospace;font-size:26px;font-weight:300;color:var(--text);line-height:1">${total}</div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px">Total</div>
       </div>
     </div>
 
-    <!-- Map sections -->
-    ${VALET_LAYOUT.map(section => `
-      <div>
-        <div style="font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">${esc(section.label)}</div>
-        <div style="display:grid;grid-template-columns:repeat(${section.cols},1fr);gap:8px;max-width:${section.cols * 145}px">
-          ${section.spots.map(num => renderValetSpotCard(num)).join('')}
+    <!-- Map — 2 rows matching physical layout -->
+    ${VALET_LAYOUT.map(row => `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+        <!-- Left panel -->
+        <div>
+          <div style="font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">${esc(row.left.label)}</div>
+          ${row.left.isNotes ? `
+            <div style="min-height:200px;background:var(--surface2);border:2px solid var(--line2);border-radius:10px;padding:14px 16px">
+              <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">SHIFT NOTES</div>
+              <div style="font-size:11px;color:var(--dim);font-style:italic">Use Shift Pass Downs for notes →</div>
+            </div>
+          ` : `
+            <div style="display:grid;grid-template-columns:repeat(${row.left.cols},1fr);gap:8px">
+              ${row.left.spots.map(num => renderValetSpotCard(num)).join('')}
+            </div>
+          `}
+        </div>
+        <!-- Right panel -->
+        <div>
+          <div style="font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">${esc(row.right.label)}</div>
+          <div style="display:grid;grid-template-columns:repeat(${row.right.cols},1fr);gap:8px">
+            ${row.right.spots.map(num => renderValetSpotCard(num)).join('')}
+          </div>
         </div>
       </div>
     `).join('')}
