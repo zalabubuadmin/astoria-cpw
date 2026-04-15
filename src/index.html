@@ -630,7 +630,7 @@ textarea.input{resize:vertical;min-height:80px;}
     <button class="sb-btn" data-page="staff"><span class="ic">👤</span>Staff & Contacts</button>
     <button class="sb-btn" data-page="vendors"><span class="ic">🔧</span>Vendors</button>
     <button class="sb-btn" data-page="codes"><span class="ic">🔐</span>Codes & Access</button>
-    <button class="sb-btn role-hidden" data-page="admin" data-min-role="manager"><span class="ic">⚙</span>Admin Panel</button>
+    <button class="sb-btn role-hidden" data-page="admin" data-min-role="supervisor"><span class="ic">⚙</span>Admin Panel</button>
 
   </nav>
   <div class="sb-footer">
@@ -1098,7 +1098,7 @@ textarea.input{resize:vertical;min-height:80px;}
     <div class="panel-head"><div class="panel-title">User Management</div><div class="panel-tools"><button class="btn btn-primary btn-sm" onclick="openAddUser()">✚ Add User</button></div></div>
     <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Dept</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-users"></tbody></table></div>
   </div>
-  <div class="panel">
+  <div class="panel" id="audit-log-panel">
     <div class="panel-head"><div class="panel-title">Audit Log</div><div class="panel-count" id="audit-count">—</div></div>
     <div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Staff</th><th>Action</th><th>Table</th><th>Details</th></tr></thead><tbody id="audit-body"></tbody></table></div>
   </div>
@@ -3092,9 +3092,13 @@ async function loadAdmin(){
   adminUsers = []; // always fresh load
   const{data:users}=await api('user_profiles','?select=*&order=created_at.asc',sessionToken);
   adminUsers = users;
+  // Only manager+ can see full audit log
+  const auditPanel = document.getElementById('audit-log-panel');
+  if (auditPanel) auditPanel.style.display = roleLevel[currentProfile?.role] >= 3 ? 'flex' : 'none';
   const{data:auditData,total}=await api('audit_log','?select=*&order=created_at.desc&limit=100',sessionToken);
   const roleLevel={staff:1,supervisor:2,manager:3,admin:4};
-  const canDelete=roleLevel[currentProfile?.role]>=3; // manager+
+  const canDelete = roleLevel[currentProfile?.role] >= 3; // manager+
+  const canEdit   = roleLevel[currentProfile?.role] >= 2; // supervisor+
 
   document.getElementById('admin-users').innerHTML=users.length?users.map((u,i)=>`
     <tr>
@@ -3104,8 +3108,8 @@ async function loadAdmin(){
       <td class="td-dim td-sm">${esc(u.department||'—')}</td>
       <td>${u.is_active?'<span class="chip chip-green">Active</span>':'<span class="chip chip-red">Inactive</span>'}</td>
       <td style="display:flex;gap:4px;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-sm" onclick="openEditUser(${i})">✎ Edit</button>
-        <button class="btn btn-ghost btn-sm" onclick="openRoleChange(${i})">⇅ Role</button>
+        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="openEditUser(${i})">✎ Edit</button>`:''}
+        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="openRoleChange(${i})">⇅ Role</button>`:''}
         ${canDelete&&u.id!==currentUser.id?`<button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}','${esc(u.full_name)}')">✕ Delete</button>`:''}
       </td>
     </tr>`).join(''):emptyRow(6);
@@ -3631,6 +3635,19 @@ document.getElementById('lock-password')?.addEventListener('keydown', e => {
 ═══════════════════════════════════════════════════════════════════════════ */
 let valetData = {};
 let currentValetSpotNum = null;
+let valetNotes = '';
+
+async function loadValetNotes() {
+  try {
+    const stored = localStorage.getItem('valet_notes_' + new Date().toLocaleDateString());
+    if (stored) valetNotes = stored;
+  } catch(e) {}
+}
+
+function saveValetNotes(val) {
+  valetNotes = val;
+  try { localStorage.setItem('valet_notes_' + new Date().toLocaleDateString(), val); } catch(e) {}
+}
 
 // Layout exactly matching the physical valet map photo (upright orientation):
 // TOP-LEFT:  spots 5,6,9 / 4,7,8  (3 cols x 2 rows)
@@ -3655,6 +3672,7 @@ async function initValetMap() {
   if (!grid) return;
   grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
+  await loadValetNotes();
   // Always force fresh load from server — no cache
   valetData = {};
   const { data } = await api('valet_map', '?select=*&order=spot_number.asc', sessionToken);
@@ -3703,9 +3721,14 @@ function renderValetMap() {
         <div>
           <div style="font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">${esc(row.left.label)}</div>
           ${row.left.isNotes ? `
-            <div style="min-height:200px;background:var(--surface2);border:2px solid var(--line2);border-radius:10px;padding:14px 16px">
-              <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">SHIFT NOTES</div>
-              <div style="font-size:11px;color:var(--dim);font-style:italic">Use Shift Pass Downs for notes →</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <textarea id="valet-notes-box"
+                placeholder="Shift notes, special instructions, reminders…"
+                style="width:100%;min-height:220px;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:14px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;resize:vertical;outline:none;line-height:1.6;transition:border-color .15s"
+                onfocus="this.style.borderColor='var(--gold)'"
+                onblur="this.style.borderColor='var(--line2)';saveValetNotes(this.value)"
+              >${valetNotes}</textarea>
+              <div style="font-size:10px;color:var(--dim)">Notes auto-save when you click away</div>
             </div>
           ` : `
             <div style="display:grid;grid-template-columns:repeat(${row.left.cols},1fr);gap:8px">
