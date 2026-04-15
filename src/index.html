@@ -3657,9 +3657,14 @@ async function initValetMap() {
 
   // Always force fresh load from server — no cache
   valetData = {};
-  const { data } = await api('valet_map', '?select=*&order=spot_number.asc&_=' + Date.now(), sessionToken);
+  const { data } = await api('valet_map', '?select=*&order=spot_number.asc', sessionToken);
   (data || []).forEach(s => { valetData[s.spot_number] = s; });
 
+  if (!data || !data.length) {
+    const grid = document.getElementById('valet-map-grid');
+    if (grid) grid.innerHTML = '<div class="empty">No valet spots found. Check your connection.</div>';
+    return;
+  }
   renderValetMap();
 }
 
