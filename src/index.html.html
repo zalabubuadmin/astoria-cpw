@@ -929,6 +929,63 @@ textarea.input{resize:vertical;min-height:80px;}
 </div>
 
 <!-- ══ VEHICLES ══════════════════════════════════════════════════════════ -->
+
+<!-- ══ VALET MAP ═════════════════════════════════════════════════════════ -->
+<div class="page" id="page-valet-map">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+    <div style="font-size:13px;color:var(--muted)">Click any spot to assign or update a vehicle. Changes save instantly.</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="valet-summary" style="font-size:12px;color:var(--muted)"></div>
+      <button class="btn btn-ghost btn-sm" onclick="initValetMap()">↺ Refresh</button>
+      <button class="btn btn-red btn-sm" onclick="clearAllValet()">🗑 Clear All</button>
+    </div>
+  </div>
+  <div id="valet-map-grid" style="display:flex;flex-direction:column;gap:16px">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ══ VALET SPOT EDIT MODAL ═════════════════════════════════════════════ -->
+<div class="modal-overlay" id="valet-edit-modal">
+  <div class="modal" style="width:400px">
+    <div class="modal-head">
+      <div class="modal-title" id="vem-title">Spot —</div>
+      <button class="close-btn" onclick="closeOverlay('valet-edit-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="vem-spot-id">
+      <input type="hidden" id="vem-spot-num">
+      <div class="form-block">
+        <label class="form-label">Unit Number</label>
+        <input class="input" id="vem-unit" placeholder="e.g. A0602"
+          style="font-family:'Geist Mono',monospace;font-size:18px;letter-spacing:.04em;text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="input-row">
+        <div class="form-block" style="margin:0">
+          <label class="form-label">Color</label>
+          <input class="input" id="vem-color" placeholder="e.g. Silver">
+        </div>
+        <div class="form-block" style="margin:0">
+          <label class="form-label">Make / Model</label>
+          <input class="input" id="vem-make" placeholder="e.g. Toyota Camry">
+        </div>
+      </div>
+      <div class="form-block" style="margin-top:10px">
+        <label class="form-label">Notes</label>
+        <textarea class="input" id="vem-notes" placeholder="Any notes…" style="min-height:60px"></textarea>
+      </div>
+      <div id="vem-msg" style="display:none"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-red btn-sm" onclick="clearValetSpot()">Clear Spot</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" onclick="closeOverlay('valet-edit-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveValetSpot()">✓ Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="page" id="page-vehicles">
   <div class="panel" style="flex:1">
     <div class="panel-head"><div class="panel-title">Vehicle Registry</div><div class="panel-count" id="veh-count">—</div></div>
@@ -3572,14 +3629,17 @@ document.getElementById('lock-password')?.addEventListener('keydown', e => {
 /* ═══════════════════════════════════════════════════════════════════════════
    VALET MAP
 ═══════════════════════════════════════════════════════════════════════════ */
-let valetData = {};     // spot_number → record
-let currentValetSpot = null;
+let valetData = {};
+let currentValetSpotNum = null;
 
-// Physical layout matching the map photo — rows of spot numbers
+// Layout matching the physical map photo
+// Section 1: spots 4-9 (top right grid)
+// Section 2: spots 62-69 (bottom right grid)  
+// Section 3: spots 50-55 (bottom left grid)
 const VALET_LAYOUT = [
-  { label: 'Section 1 — Spots 4–9',   spots: [4,5,6,7,8,9] },
-  { label: 'Section 2 — Spots 62–69', spots: [62,63,64,65,66,67,68,69] },
-  { label: 'Section 3 — Spots 50–55', spots: [50,51,52,53,54,55] },
+  { label: 'Section 1', spots: [4,5,6,7,8,9],         cols: 6 },
+  { label: 'Section 2', spots: [62,63,64,65,66,67,68,69], cols: 4 },
+  { label: 'Section 3', spots: [50,51,52,53,54,55],    cols: 3 },
 ];
 
 async function initValetMap() {
@@ -3589,7 +3649,7 @@ async function initValetMap() {
 
   const { data } = await api('valet_map', '?select=*&order=spot_number.asc', sessionToken);
   valetData = {};
-  (data || []).forEach(s => valetData[s.spot_number] = s);
+  (data || []).forEach(s => { valetData[s.spot_number] = s; });
 
   renderValetMap();
 }
@@ -3598,59 +3658,71 @@ function renderValetMap() {
   const grid = document.getElementById('valet-map-grid');
   if (!grid) return;
 
-  // Count occupied
   const occupied = Object.values(valetData).filter(s => s.unit_number?.trim()).length;
   const total = Object.keys(valetData).length;
 
+  // Summary strip
+  const summary = document.getElementById('valet-summary');
+  if (summary) summary.innerHTML = `<span style="color:var(--gold);font-weight:500">${occupied}</span> occupied · <span style="color:var(--green)">${total - occupied}</span> available`;
+
   grid.innerHTML = `
-    <div style="display:flex;gap:12px;margin-bottom:4px">
-      <div style="padding:10px 16px;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:9px;text-align:center;min-width:100px">
-        <div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:300;color:var(--gold)">${occupied}</div>
-        <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Occupied</div>
+    <!-- Stats -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="padding:10px 18px;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:9px;min-width:90px;text-align:center">
+        <div style="font-family:'Geist Mono',monospace;font-size:30px;font-weight:300;color:var(--gold);line-height:1">${occupied}</div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px">Occupied</div>
       </div>
-      <div style="padding:10px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;text-align:center;min-width:100px">
-        <div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:300;color:var(--text)">${total-occupied}</div>
-        <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Available</div>
+      <div style="padding:10px 18px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;min-width:90px;text-align:center">
+        <div style="font-family:'Geist Mono',monospace;font-size:30px;font-weight:300;color:var(--green);line-height:1">${total - occupied}</div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px">Available</div>
       </div>
-      <div style="padding:10px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;text-align:center;min-width:100px">
-        <div style="font-family:'Geist Mono',monospace;font-size:28px;font-weight:300;color:var(--text)">${total}</div>
-        <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Total Spots</div>
+      <div style="padding:10px 18px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;min-width:90px;text-align:center">
+        <div style="font-family:'Geist Mono',monospace;font-size:30px;font-weight:300;color:var(--text);line-height:1">${total}</div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px">Total</div>
       </div>
     </div>
+
+    <!-- Map sections -->
     ${VALET_LAYOUT.map(section => `
-      <div class="valet-section">
-        <div class="valet-section-label">${esc(section.label)}</div>
-        <div class="valet-row">
-          ${section.spots.map(num => renderValetSpot(num)).join('')}
+      <div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">${esc(section.label)}</div>
+        <div style="display:grid;grid-template-columns:repeat(${section.cols},1fr);gap:8px;max-width:${section.cols * 145}px">
+          ${section.spots.map(num => renderValetSpotCard(num)).join('')}
         </div>
       </div>
     `).join('')}
   `;
 }
 
-function renderValetSpot(num) {
-  const s = valetData[num] || { spot_number: num };
-  const hasVehicle = s.unit_number?.trim();
-  const updatedTime = s.updated_at && hasVehicle
-    ? `<div class="valet-updated">${fT(s.updated_at)} · ${esc(s.updated_by||'')}</div>` : '';
-
-  return `<div class="valet-spot ${hasVehicle ? 'occupied' : ''}" onclick="openValetEdit(${num})">
-    <div class="valet-spot-num">SPOT ${num}</div>
-    ${hasVehicle ? `
-      <div class="valet-spot-unit">${esc(s.unit_number)}</div>
-      <div class="valet-spot-vehicle">${esc(s.vehicle_color)} ${esc(s.vehicle_make)}</div>
-      ${s.notes ? `<div class="valet-spot-notes">${esc(s.notes)}</div>` : ''}
-      ${updatedTime}
-    ` : `
-      <div class="valet-spot-empty">Empty — tap to assign</div>
-    `}
-  </div>`;
+function renderValetSpotCard(num) {
+  const s = valetData[num] || {};
+  const occupied = s.unit_number?.trim();
+  return `
+    <div onclick="openValetEdit(${num})" style="
+      min-height:110px;padding:10px 12px;border-radius:10px;cursor:pointer;
+      background:${occupied ? 'var(--gold-bg)' : 'var(--surface2)'};
+      border:1px solid ${occupied ? 'var(--gold-bd)' : 'var(--line2)'};
+      transition:all .15s;display:flex;flex-direction:column;
+    "
+    onmouseover="this.style.borderColor='var(--gold-bd)';this.style.boxShadow='0 2px 12px rgba(0,0,0,.15)'"
+    onmouseout="this.style.borderColor='${occupied ? 'var(--gold-bd)' : 'var(--line2)}'}';this.style.boxShadow=''">
+      <div style="font-family:'Geist Mono',monospace;font-size:10px;color:${occupied ? 'var(--gold)' : 'var(--dim)'};font-weight:600;margin-bottom:5px">SPOT ${num}</div>
+      ${occupied ? `
+        <div style="font-family:'Geist Mono',monospace;font-size:17px;color:var(--text);font-weight:500;line-height:1;margin-bottom:3px">${esc(s.unit_number)}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.4">${esc(s.vehicle_color || '')}${s.vehicle_color && s.vehicle_make ? ' · ' : ''}${esc(s.vehicle_make || '')}</div>
+        ${s.notes ? `<div style="font-size:10px;color:var(--dim);margin-top:4px;border-top:1px solid var(--line);padding-top:4px;line-height:1.4">${esc(s.notes)}</div>` : ''}
+        <div style="font-size:9px;color:var(--dim);margin-top:auto;padding-top:4px">${s.updated_by ? esc(s.updated_by) : ''}</div>
+      ` : `
+        <div style="font-size:11px;color:var(--dim);font-style:italic;margin-top:auto">Empty</div>
+      `}
+    </div>`;
 }
 
 function openValetEdit(spotNum) {
-  const s = valetData[spotNum] || { spot_number: spotNum };
-  currentValetSpot = spotNum;
+  const s = valetData[spotNum] || {};
+  currentValetSpotNum = spotNum;
   document.getElementById('vem-title').textContent = `Spot ${spotNum}`;
+  document.getElementById('vem-spot-num').value = spotNum;
   document.getElementById('vem-spot-id').value = s.id || '';
   document.getElementById('vem-unit').value = s.unit_number || '';
   document.getElementById('vem-color').value = s.vehicle_color || '';
@@ -3662,79 +3734,68 @@ function openValetEdit(spotNum) {
 }
 
 async function saveValetSpot() {
-  const spotNum = currentValetSpot;
-  const s = valetData[spotNum];
-  const unit = document.getElementById('vem-unit')?.value.trim().toUpperCase();
+  const spotNum = currentValetSpotNum;
+  const s = valetData[spotNum] || {};
+  const unit  = document.getElementById('vem-unit')?.value.trim().toUpperCase();
   const color = document.getElementById('vem-color')?.value.trim();
-  const make = document.getElementById('vem-make')?.value.trim();
+  const make  = document.getElementById('vem-make')?.value.trim();
   const notes = document.getElementById('vem-notes')?.value.trim();
-  const msg = document.getElementById('vem-msg');
+  const msg   = document.getElementById('vem-msg');
 
   const payload = {
-    unit_number: unit,
-    vehicle_color: color,
-    vehicle_make: make,
-    notes,
+    unit_number: unit, vehicle_color: color, vehicle_make: make, notes,
     updated_at: new Date().toISOString(),
     updated_by: currentProfile?.full_name || ''
   };
 
-  let ok;
-  if (s?.id) {
+  let ok = false;
+  if (s.id) {
     ok = await apiPatch('valet_map', `?id=eq.${s.id}`, payload, sessionToken);
   } else {
-    // Insert new record for this spot
     const r = await apiPost('valet_map', { spot_number: spotNum, ...payload }, sessionToken);
     ok = r.ok;
-    if (ok && r.data?.[0]) valetData[spotNum] = r.data[0];
+    if (ok && r.data?.[0]) valetData[spotNum] = { ...r.data[0] };
   }
 
   if (ok) {
-    // Update local cache
     valetData[spotNum] = { ...s, spot_number: spotNum, ...payload };
     auditLog('UPDATE_VALET_SPOT', 'valet_map', { spot: spotNum, unit });
     closeOverlay('valet-edit-modal');
     renderValetMap();
   } else {
-    msg.className = 'alert alert-red';
-    msg.innerHTML = 'Error saving. Please try again.';
-    msg.style.display = 'block';
+    if (msg) { msg.className = 'alert alert-red'; msg.innerHTML = 'Error saving. Try again.'; msg.style.display = 'block'; }
   }
 }
 
 async function clearValetSpot() {
-  const spotNum = currentValetSpot;
+  const spotNum = currentValetSpotNum;
   const s = valetData[spotNum];
-  if (!s?.id) { closeOverlay('valet-edit-modal'); return; }
-
-  showConfirm('Clear Spot?', `Clear spot <strong>${spotNum}</strong> and remove vehicle assignment?`, async () => {
+  showConfirm('Clear Spot?', `Clear spot <strong>${spotNum}</strong>?`, async () => {
     const payload = { unit_number: '', vehicle_color: '', vehicle_make: '', notes: '', updated_at: new Date().toISOString(), updated_by: currentProfile?.full_name || '' };
-    const ok = await apiPatch('valet_map', `?id=eq.${s.id}`, payload, sessionToken);
-    if (ok) {
+    if (s?.id) {
+      await apiPatch('valet_map', `?id=eq.${s.id}`, payload, sessionToken);
       valetData[spotNum] = { ...s, ...payload };
-      closeOverlay('valet-edit-modal');
-      renderValetMap();
     }
+    closeOverlay('valet-edit-modal');
+    renderValetMap();
   });
 }
 
 async function clearAllValet() {
-  showConfirm('Clear All Spots?', 'This will clear <strong>all</strong> valet spot assignments. Do this at shift end or when starting fresh.', async () => {
-    const ids = Object.values(valetData).filter(s => s.id && s.unit_number?.trim()).map(s => s.id);
+  showConfirm('Clear All Spots?', 'Remove all vehicle assignments from every spot?', async () => {
+    const spots = Object.values(valetData).filter(s => s.id && s.unit_number?.trim());
     const payload = { unit_number: '', vehicle_color: '', vehicle_make: '', notes: '', updated_at: new Date().toISOString(), updated_by: currentProfile?.full_name || '' };
-    for (const id of ids) {
-      await apiPatch('valet_map', `?id=eq.${id}`, payload, sessionToken);
-    }
-    auditLog('CLEAR_ALL_VALET', 'valet_map', { cleared: ids.length });
-    initValetMap();
+    for (const s of spots) await apiPatch('valet_map', `?id=eq.${s.id}`, payload, sessionToken);
+    spots.forEach(s => { valetData[s.spot_number] = { ...s, ...payload }; });
+    auditLog('CLEAR_ALL_VALET', 'valet_map', { cleared: spots.length });
+    renderValetMap();
   }, 'Clear All');
 }
 
-// Enter to save in valet modal
+// Enter key saves in valet modal
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Enter' && document.getElementById('valet-edit-modal')?.classList.contains('open')) {
-    const active = document.activeElement;
-    if (active && active.tagName !== 'TEXTAREA') saveValetSpot();
+    if (document.activeElement?.tagName !== 'TEXTAREA') saveValetSpot();
   }
 });
 
