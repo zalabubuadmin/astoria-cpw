@@ -1,7 +1,8 @@
 {
   "name": "astoria-cpw",
   "version": "1.0.0",
-  "description": "Astoria Central Park West — Concierge Portal",
+  "description": "Astoria Central Park West Concierge Portal",
+  "author": "Astoria CPW",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -10,22 +11,18 @@
   "build": {
     "appId": "com.astoriacpw.concierge",
     "productName": "Astoria CPW Concierge",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "src/**/*", "icon.ico"],
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "installerIcon": "icon.ico",
-      "uninstallerIcon": "icon.ico",
-      "installerHeaderIcon": "icon.ico",
+      "oneClick": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Astoria CPW Concierge"
-    },
-    "files": ["main.js","src/**/*"],
-    "directories": { "buildResources": "." }
+    }
   },
   "devDependencies": {
     "electron": "^28.0.0",

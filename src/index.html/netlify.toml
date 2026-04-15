@@ -1,8 +1,0 @@
-[build]
-  publish = "src"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-    Cache-Control = "no-cache, no-store, must-revalidate"
