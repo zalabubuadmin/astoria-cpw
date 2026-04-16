@@ -5123,14 +5123,10 @@ async function sendAI() {
   const thinkDiv = appendAIMessage('<em>Thinking…</em>', 'bot thinking', 'ai-thinking');
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Call our Netlify proxy function — keeps API key server-side
+    const response = await fetch('/.netlify/functions/ai', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': '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',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
