@@ -1190,7 +1190,7 @@ textarea.input{resize:vertical;min-height:80px;}
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
-    <button onclick="toggleAI()" title="Ask Astoria AI" id="ai-topbar-btn" style="display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:var(--gold-bg);border:1px solid var(--gold-bd);color:var(--gold);cursor:pointer;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;transition:all .15s">
+    <button onclick="toggleAI()" title="Ask Crystal" id="ai-topbar-btn" style="display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:var(--gold-bg);border:1px solid var(--gold-bd);color:var(--gold);cursor:pointer;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;transition:all .15s">
       <span>✦</span> AI
     </button>
 
@@ -1199,13 +1199,13 @@ textarea.input{resize:vertical;min-height:80px;}
       <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:14px">✦</div>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:13px;color:var(--text)">Astoria Assistant</div>
-          <div style="font-size:10px;color:var(--muted)">Post orders, procedures, app features</div>
+          <div style="font-weight:600;font-size:13px;color:var(--text)">Crystal</div>
+          <div style="font-size:10px;color:var(--muted)">Post orders, procedures, codes & more</div>
         </div>
         <button class="close-btn" onclick="toggleAI()">✕</button>
       </div>
       <div id="ai-messages" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px">
-        <div style="max-width:90%;padding:8px 11px;border-radius:10px;border-bottom-left-radius:3px;font-size:12.5px;line-height:1.5;background:var(--surface2);border:1px solid var(--line);color:var(--text);align-self:flex-start">Hi! Ask me about post orders, procedures, codes, or anything in the app.</div>
+        <div style="max-width:90%;padding:8px 11px;border-radius:10px;border-bottom-left-radius:3px;font-size:12.5px;line-height:1.5;background:var(--surface2);border:1px solid var(--line);color:var(--text);align-self:flex-start">Hi! I'm Crystal, your Astoria assistant. Ask me about post orders, emergency procedures, resident info, codes, or anything in the app.</div>
       </div>
       <div style="padding:8px 10px;border-top:1px solid var(--line);display:flex;gap:6px;align-items:flex-end;flex-shrink:0">
         <textarea id="ai-input" placeholder="Ask anything…" rows="1"
@@ -5090,7 +5090,7 @@ let aiOpen = false;
 let aiHistory = [];
 let aiThinking = false;
 
-const AI_SYSTEM = `You are the Astoria Concierge Assistant — a helpful AI for staff at Astoria at Central Park West, a luxury high-rise at 401 Rockefeller, Irvine CA 92612.
+const AI_SYSTEM = `You are Crystal, the Astoria Concierge AI Assistant — a helpful AI for staff at Astoria at Central Park West, a luxury high-rise at 401 Rockefeller, Irvine CA 92612.
 
 You have deep knowledge of:
 - All post orders and procedures (fire alarm protocol, emergency procedures, concierge duties, valet operations, active shooter protocol, appearance standards, communication procedures, call box/garage intercom, elevator entrapment)
