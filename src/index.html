@@ -2551,11 +2551,22 @@ function renderDashWidgets() {
         </div>`;
         break;
       case 'quickcodes':
-        el.innerHTML = `<div class="qa-strip">
-          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Luxer Master</div><div class="qa-value">63886388</div><div class="qa-sub">Password: 1Luxerone</div></div>
-          <div class="qa-card" onclick="goPage('codes')" style="background:var(--gold-bg);border-color:var(--gold-bd)"><div class="qa-label" style="color:var(--gold)">📦 Amazon / Luxer</div><div class="qa-value" style="font-size:18px">3958</div><div class="qa-sub">Amazon delivery code</div></div>
-          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Left Computer</div><div class="qa-value">401405</div><div class="qa-sub">or Astoria@401</div></div>
-          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Right Computer</div><div class="qa-value">4015</div><div class="qa-sub">Front desk right</div></div>
+        el.innerHTML = `<div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Quick Codes & Access</div>
+            <div class="panel-tools">
+              <input class="input" id="guest-search-input" placeholder="🔍 Search visitor by name…"
+                style="width:220px;padding:5px 10px;font-size:12px"
+                oninput="dashGuestSearch(this.value)">
+            </div>
+          </div>
+          <div id="guest-search-results" style="display:none;padding:8px 14px 4px;border-bottom:1px solid var(--line)"></div>
+          <div class="qa-strip" style="padding:12px 16px">
+            <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Luxer Master</div><div class="qa-value">63886388</div><div class="qa-sub">Password: 1Luxerone</div></div>
+            <div class="qa-card" onclick="goPage('codes')" style="background:var(--gold-bg);border-color:var(--gold-bd)"><div class="qa-label" style="color:var(--gold)">📦 Amazon / Luxer</div><div class="qa-value" style="font-size:18px">3958</div><div class="qa-sub">Amazon delivery code</div></div>
+            <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Left Computer</div><div class="qa-value">401405</div><div class="qa-sub">or Astoria@401</div></div>
+            <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Right Computer</div><div class="qa-value">4015</div><div class="qa-sub">Front desk right</div></div>
+          </div>
         </div>`;
         break;
       case 'signin':
