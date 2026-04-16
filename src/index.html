@@ -5087,19 +5087,26 @@ async function sendAI() {
     });
 
     const data = await response.json();
-    const reply = data.content?.[0]?.text || 'Sorry, I had trouble responding. Please try again.';
 
-    // Remove thinking indicator
+    // Handle API errors
+    if (!response.ok) {
+      const errMsg = data.error?.message || `API error ${response.status}`;
+      document.getElementById('ai-thinking')?.remove();
+      appendAIMessage(`Error: ${errMsg}`, 'bot');
+      aiThinking = false;
+      if (sendBtn) sendBtn.disabled = false;
+      return;
+    }
+
+    const reply = data.content?.[0]?.text || 'Sorry, I had trouble responding. Please try again.';
     document.getElementById('ai-thinking')?.remove();
     appendAIMessage(reply, 'bot');
     aiHistory.push({ role: 'assistant', content: reply });
-
-    // Keep history manageable
     if (aiHistory.length > 20) aiHistory = aiHistory.slice(-20);
 
   } catch (err) {
     document.getElementById('ai-thinking')?.remove();
-    appendAIMessage('Connection error. Please check your network and try again.', 'bot');
+    appendAIMessage('Network error: ' + err.message, 'bot');
   }
 
   aiThinking = false;
@@ -5114,6 +5121,52 @@ function initAI() {
 }
 
 /* ── Guest Lookup Overlay ─────────────────────────────────────────────── */
+async function gloShowResident(unitRaw) {
+  if (!unitRaw || unitRaw === '—') return;
+  const unit = normalizeUnit(unitRaw.toUpperCase());
+  const {data} = await api('residents', `?unit_number=eq.${unit}&select=*&limit=1`, sessionToken);
+  if (!data?.length) return;
+  const r = data[0];
+
+  const RKWS = ['NO ACCESS','NOT ALLOWED','NO ENTRY','RESTRICTED','DO NOT','TRESPASS','RESTRAINING','BANNED'];
+  const restricted = RKWS.some(kw => (r.guests||'').toUpperCase().includes(kw));
+  const hasQD = r.quick_dial?.toString().toUpperCase() === 'TRUE';
+  const names = (r.names||[]);
+
+  // Show in a modal overlay
+  const existing = document.getElementById('glo-resident-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'glo-resident-modal';
+  modal.className = 'modal-overlay';
+  modal.style.zIndex = '320';
+  modal.innerHTML = `
+    <div class="modal" style="width:560px;max-height:85vh;overflow-y:auto">
+      <div class="modal-head">
+        <div class="modal-title">${esc(unit)} — ${esc(r.tower)} Tower</div>
+        <button class="close-btn" onclick="document.getElementById('glo-resident-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body">
+        ${restricted ? `<div class="alert alert-red" style="margin-bottom:14px">⛔ ${esc(r.guests)}</div>` : ''}
+        ${names.map(n => `<div style="padding:7px 12px;background:var(--surface2);border:1px solid var(--line);border-radius:7px;font-size:13px;font-weight:500;margin-bottom:5px">${esc(n)}</div>`).join('')}
+        <div class="dl" style="margin-top:16px">
+          <div><div class="dt">CPW Code</div><div class="dd gold" style="font-size:28px;font-weight:300">${esc(r.cpw_safelist_code)||'—'}</div></div>
+          <div><div class="dt">QD Service</div><div class="dd">${hasQD ? '<span class="chip chip-green">✓ Has Service</span>' : '<span class="chip chip-gray">✗ No Service</span>'}</div></div>
+          <div><div class="dt">Phone</div><div class="dd mono" style="font-size:12px">${esc((r.phone_numbers||[]).join(', '))||'—'}</div></div>
+          <div><div class="dt">Access / HK</div><div class="dd">${esc(r.access_ok)||'—'}</div></div>
+          <div class="dl-full"><div class="dt">Parking</div><div class="dd mono">${esc((r.parking_spots||[]).join(', '))||'—'}</div></div>
+          ${r.guests && !restricted ? `<div class="dl-full"><div class="dt">Guest Notes</div><div class="dd" style="white-space:pre-wrap;color:var(--amber)">${esc(r.guests)}</div></div>` : ''}
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="document.getElementById('glo-resident-modal').remove()">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.classList.add('open');
+}
+
 function openGuestLookupOverlay() {
   document.getElementById('guest-lookup-overlay').classList.add('open');
   setTimeout(() => document.getElementById('glo-q')?.focus(), 100);
@@ -5137,11 +5190,12 @@ async function gloSearch(query) {
       return;
     }
     el.innerHTML = `
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${data.length} result${data.length!==1?'s':''} for "<strong>${esc(query)}</strong>"</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${data.length} result${data.length!==1?'s':''} for "<strong>${esc(query)}</strong>" · <em style="color:var(--dim)">Click a row to view resident info</em></div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Name</th><th>Unit</th><th>Purpose</th><th>Notes</th><th>Time</th></tr></thead>
         <tbody>
-          ${data.map(v => `<tr>
+          ${data.map(v => `<tr style="cursor:pointer" onclick="gloShowResident('${esc(v.unit_number||'')}')"
+            onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
             <td class="td-bold">${esc(v.visitor_name)}</td>
             <td class="td-mono td-gold">${esc(v.unit_number||'—')}</td>
             <td class="td-dim">${esc(v.purpose||'')}</td>
@@ -5175,8 +5229,8 @@ if(restoreSession()){
 }
 </script>
 <!-- ══ AI ASSISTANT ══════════════════════════════════════════════════════ -->
-<button id="ai-fab" onclick="toggleAI()" title="Ask Astoria AI" style="position:fixed;bottom:24px;left:24px;width:auto;height:44px;border-radius:22px;background:#c8a96a;color:#1a0f00;border:none;font-size:13px;font-weight:700;cursor:pointer;z-index:190;box-shadow:0 4px 16px rgba(200,169,106,.45);display:none;align-items:center;justify-content:center;padding:0 18px;gap:8px;font-family:'Outfit',sans-serif;letter-spacing:.02em;transition:all .2s">
-  <span style="font-size:17px">✦</span> Astoria AI
+<button id="ai-fab" onclick="toggleAI()" title="Ask Astoria AI" style="position:fixed;bottom:20px;left:20px;width:auto;height:32px;border-radius:16px;background:#c8a96a;color:#1a0f00;border:none;font-size:11.5px;font-weight:600;cursor:pointer;z-index:190;box-shadow:0 2px 10px rgba(200,169,106,.4);display:none;align-items:center;justify-content:center;padding:0 12px;gap:6px;font-family:'Outfit',sans-serif;letter-spacing:.02em;transition:all .2s;opacity:.85">
+  <span style="font-size:13px">✦</span> Astoria AI
 </button>
 
 <div id="ai-panel" style="position:fixed;bottom:80px;left:24px;width:380px;height:520px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;z-index:191">
