@@ -1195,7 +1195,7 @@ textarea.input{resize:vertical;min-height:80px;}
     </button>
 
     <!-- AI Chat Panel - anchored top-right -->
-    <div id="ai-panel" style="display:none;position:fixed;top:56px;right:16px;width:370px;height:500px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.4);flex-direction:column;overflow:hidden;z-index:300">
+    <div id="ai-panel" style="display:none;position:fixed;bottom:16px;right:16px;width:370px;height:500px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.4);flex-direction:column;overflow:hidden;z-index:300">
       <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:14px">✦</div>
         <div style="flex:1">
@@ -3595,19 +3595,47 @@ async function loadCodes(){
    ADMIN
 ═══════════════════════════════════════════════════════════════════════════ */
 async function loadAdmin(){
+  const roleLevel = {staff:1,supervisor:2,manager:3,admin:4};
+  const myLevel = roleLevel[currentProfile?.role] || 0;
+  const canDelete = myLevel >= 3;
+  const canEdit   = myLevel >= 2;
+
   const{data:users}=await api('user_profiles','?select=*&order=created_at.asc',sessionToken);
   const{data:auditData,total}=await api('audit_log','?select=*&order=created_at.desc&limit=50',sessionToken);
-  document.getElementById('admin-users').innerHTML=users.length?users.map(u=>`
+
+  if(!users){ 
+    document.getElementById('admin-users').innerHTML = emptyRow(6,'Could not load users — session may have expired. Please sign out and back in.');
+    return;
+  }
+
+  document.getElementById('admin-users').innerHTML = users.length ? users.map(u=>`
     <tr>
       <td class="td-bold">${esc(u.full_name)}</td>
       <td class="td-mono td-dim">${esc(u.username||'—')}</td>
       <td>${roleChip(u.role)}</td>
-      <td class="td-dim td-sm">${esc(u.badge_number)}</td>
+      <td class="td-dim td-sm">${esc(u.department||'—')}</td>
       <td>${u.is_active?'<span class="chip chip-green">Active</span>':'<span class="chip chip-red">Inactive</span>'}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="cycleRole('${u.id}','${u.role}')">Change Role</button></td>
-    </tr>`).join(''):emptyRow(6);
-  const cnt=document.getElementById('audit-count');if(cnt)cnt.textContent=total??auditData.length;
-  document.getElementById('audit-body').innerHTML=auditData.length?auditData.map(a=>`<tr><td class="td-dim td-sm td-mono">${fDT(a.created_at)}</td><td class="td-bold">${esc(a.user_name)}</td><td><span class="chip chip-gray" style="font-size:10px">${esc(a.action)}</span></td><td class="td-dim td-sm">${esc(a.table_name)}</td><td class="td-dim td-sm td-wrap">${esc(JSON.stringify(a.details||{}))}</td></tr>`).join(''):emptyRow(5);
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">Edit</button>`:''}
+        ${canDelete && u.username!=='admin'?`<button class="btn btn-red btn-sm" onclick="deactivateUser('${u.id}','${esc(u.full_name)}')">Deactivate</button>`:''}
+      </td>
+    </tr>`).join('') : emptyRow(6,'No users found.');
+
+  const cnt=document.getElementById('audit-count');
+  if(cnt) cnt.textContent = total ?? auditData?.length ?? 0;
+
+  if(!auditData){
+    document.getElementById('audit-body').innerHTML = emptyRow(5,'Could not load audit log.');
+    return;
+  }
+  document.getElementById('audit-body').innerHTML = auditData.length ? auditData.map(a=>`
+    <tr>
+      <td class="td-dim td-sm td-mono">${fDT(a.created_at)}</td>
+      <td class="td-bold">${esc(a.user_name)}</td>
+      <td><span class="chip chip-gray" style="font-size:10px">${esc(a.action)}</span></td>
+      <td class="td-dim td-sm">${esc(a.table_name)}</td>
+      <td class="td-dim td-sm td-wrap">${esc(JSON.stringify(a.details||{}))}</td>
+    </tr>`).join('') : emptyRow(5,'No audit entries yet.');
 }
 function openAddUser(){document.getElementById('add-user-modal').classList.add('open');}
 function toggleUserFields(){
