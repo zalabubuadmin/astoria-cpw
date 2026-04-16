@@ -1190,6 +1190,9 @@ textarea.input{resize:vertical;min-height:80px;}
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
+    <button onclick="toggleAI()" title="Ask Astoria AI" id="ai-topbar-btn" style="display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:var(--gold-bg);border:1px solid var(--gold-bd);color:var(--gold);cursor:pointer;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;transition:all .15s">
+      <span>✦</span> AI
+    </button>
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-minnow').classList.add('open')" title="Minnow Pod"><span class="ql-icon">🫙</span><span style="font-size:11.5px">Minnow Pod</span></button>
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-luxer').classList.add('open')" title="LuxerOne"><span class="ql-icon">📦</span><span style="font-size:11.5px">Luxer</span></button>
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-gmail').classList.add('open')" title="Gmail"><span class="ql-icon">✉</span><span style="font-size:11.5px">Email</span></button>
@@ -5116,8 +5119,9 @@ async function sendAI() {
 
 // Show AI FAB after login
 function initAI() {
+  // Show floating button
   const fab = document.getElementById('ai-fab');
-  if (fab) { fab.style.display = 'flex'; }
+  if (fab) fab.style.display = 'flex';
 }
 
 /* ── Guest Lookup Overlay ─────────────────────────────────────────────── */
@@ -5173,6 +5177,7 @@ function openGuestLookupOverlay() {
 }
 
 let gloTimer = null;
+let gloVisitorData = [];
 async function gloSearch(query) {
   const el = document.getElementById('glo-results');
   if (!el) return;
@@ -5194,14 +5199,14 @@ async function gloSearch(query) {
       <div class="tbl-wrap"><table>
         <thead><tr><th>Name</th><th>Unit</th><th>Purpose</th><th>Notes</th><th>Time</th></tr></thead>
         <tbody>
-          ${data.map(v => `<tr style="cursor:pointer" onclick="gloShowResident('${esc(v.unit_number||'')}')"
+          ${data.map((v,i) => {gloVisitorData=gloVisitorData||[]; gloVisitorData[i]=v; return `<tr style="cursor:pointer" onclick="gloShowResident(gloVisitorData[${i}].unit_number)"
             onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
             <td class="td-bold">${esc(v.visitor_name)}</td>
             <td class="td-mono td-gold">${esc(v.unit_number||'—')}</td>
             <td class="td-dim">${esc(v.purpose||'')}</td>
             <td class="td-dim td-sm">${esc(v.notes||'')}</td>
             <td class="td-dim td-sm">${fT(v.sign_in_time)}</td>
-          </tr>`).join('')}
+          </tr>`;}).join('')}
         </tbody>
       </table></div>`;
   }, 300);
