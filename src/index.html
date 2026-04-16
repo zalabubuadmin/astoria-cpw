@@ -5856,7 +5856,7 @@ function renderKioskForm() {
     $id('k-submit').textContent = 'Submitting…';
     kStatus('kok','Submitting…');
 
-    // Save to Supabase visitors table
+    // Save to Supabase visitors table — use anon key so iPad kiosk needs no login
     const {ok} = await apiPost('visitors', {
       visitor_name: name,
       purpose: kPurpose,
@@ -5864,7 +5864,7 @@ function renderKioskForm() {
       notes: noteParts.join(' · '),
       sign_in_time: new Date().toISOString(),
       submitted_by_name: 'Guest Kiosk'
-    }, sessionToken);
+    }, KEY);
 
     // Update live state with submitted flag
     await kioskLiveSet({
@@ -5879,7 +5879,7 @@ function renderKioskForm() {
 
     if (ok) {
       kStatus('kok', `✓ ${esc(name)} signed in!`);
-      auditLog('KIOSK_SIGN_IN','visitors',{name,purpose:kPurpose,unit:unitFinal});
+      try { auditLog('KIOSK_SIGN_IN','visitors',{name,purpose:kPurpose,unit:unitFinal}); } catch(e) {}
       // Reset after 1.2s
       setTimeout(() => {
         kSubmitting = false;
@@ -5900,7 +5900,7 @@ function renderKioskForm() {
       kSubmitting = false;
       $id('k-submit').disabled = false;
       $id('k-submit').textContent = 'Submit Sign-In';
-      kStatus('kerr','Submit failed. Please try again.');
+      kStatus('kerr','Submit failed. Check console for details.');
     }
   });
 

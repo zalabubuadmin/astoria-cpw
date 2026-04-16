@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Astoria CPW — Guest Sign-In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & base ────────────────────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'Outfit',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body{background:#0d0d0e;color:#f8f6f2;}
+
+/* ── Background ─────────────────────────────────────────────────────────── */
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse at 25% 35%,#1c1408 0%,#0d0d0e 65%);z-index:0;}
+.bg-noise{position:fixed;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");z-index:0;}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.wrap{position:relative;z-index:1;min-height:100%;display:flex;align-items:flex-start;justify-content:center;padding:32px 20px 40px;}
+.card{width:100%;max-width:640px;background:rgba(20,20,22,.85);border:1px solid rgba(200,169,106,.18);border-radius:22px;padding:36px 40px;backdrop-filter:blur(12px);}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+.logo-box{width:52px;height:52px;border-radius:11px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;padding:5px;}
+.logo-word{font-family:'Cormorant Garamond',serif;font-size:9px;font-weight:700;color:#1a1814;letter-spacing:.18em;line-height:1;}
+.logo-line{width:34px;height:.5px;background:#ccc;margin:3px 0;}
+.logo-sub{font-size:4px;letter-spacing:.1em;color:#999;text-align:center;}
+.header-text h1{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#f8f6f2;line-height:1.1;}
+.header-text p{font-size:13px;color:#696870;margin-top:3px;}
+
+/* ── Form sections ───────────────────────────────────────────────────────── */
+.section{margin-top:22px;}
+.section-label{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#696870;margin-bottom:10px;display:block;}
+.kinput{width:100%;background:rgba(28,28,31,.8);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:14px 16px;color:#f8f6f2;font-family:'Outfit',sans-serif;font-size:18px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;}
+.kinput:focus{border-color:#c8a96a;box-shadow:0 0 0 3px rgba(200,169,106,.1);}
+.kinput::placeholder{color:#3e3d44;}
+
+/* ── Pill buttons ────────────────────────────────────────────────────────── */
+.pill-row{display:grid;gap:10px;}
+.pill-row.c3{grid-template-columns:repeat(3,1fr);}
+.pill-row.c2{grid-template-columns:repeat(2,1fr);}
+.pill{min-height:64px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(28,28,31,.8);color:#b0adb8;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .15s;padding:12px;-webkit-tap-highlight-color:transparent;user-select:none;}
+.pill:hover{background:rgba(40,40,44,.9);color:#f8f6f2;}
+.pill:active{transform:scale(.98);}
+.pill.on{background:rgba(200,169,106,.12);border-color:rgba(200,169,106,.35);color:#e0c078;}
+
+/* ── Field block ─────────────────────────────────────────────────────────── */
+.field-block{margin-top:16px;}
+.tower-note{font-size:11px;color:#3e3d44;margin:6px 0 0 2px;}
+
+/* ── Submit ──────────────────────────────────────────────────────────────── */
+.submit{width:100%;min-height:64px;border-radius:14px;background:#c8a96a;color:#1a0f00;border:none;font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;cursor:pointer;margin-top:26px;transition:all .15s;box-shadow:0 4px 20px rgba(200,169,106,.25);}
+.submit:hover{background:#e0c078;box-shadow:0 6px 28px rgba(200,169,106,.35);}
+.submit:active{transform:scale(.99);}
+.submit:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+/* ── Status ──────────────────────────────────────────────────────────────── */
+.status{min-height:22px;margin-top:14px;text-align:center;font-size:14px;font-weight:600;}
+.err{color:#e0605a;}.ok{color:#4db890;}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.footer{margin-top:18px;text-align:center;font-size:12px;color:#3e3d44;display:flex;align-items:center;justify-content:center;gap:6px;}
+.live-dot{color:#4db890;font-size:14px;}
+
+/* ── Hidden ──────────────────────────────────────────────────────────────── */
+.hidden{display:none!important;}
+
+/* ── Thank-you screen ────────────────────────────────────────────────────── */
+#thankyou{display:none;text-align:center;padding:20px 0;}
+#thankyou .ty-icon{font-size:64px;margin-bottom:16px;}
+#thankyou h2{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:#f8f6f2;margin-bottom:8px;}
+#thankyou p{font-size:16px;color:#696870;}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media(max-width:520px){
+  .wrap{padding:16px 12px 28px;}
+  .card{padding:24px 20px;border-radius:18px;}
+  .pill-row.c3{grid-template-columns:1fr;}
+  .kinput{font-size:16px;}
+  .submit{font-size:18px;}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-noise"></div>
+
+<div class="wrap">
+  <div class="card">
+
+    <!-- Header -->
+    <div class="logo-wrap">
+      <div class="logo-box">
+        <div class="logo-word">ASTORIA</div>
+        <div class="logo-line"></div>
+        <div class="logo-sub">CENTRAL PARK WEST</div>
+      </div>
+      <div class="header-text">
+        <h1>Welcome</h1>
+        <p>Please sign in to continue</p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div id="form-area">
+
+      <!-- Name -->
+      <div class="section">
+        <span class="section-label">Your Name</span>
+        <input class="kinput" id="k-name" type="text" inputmode="text" autocapitalize="words" autocomplete="off" spellcheck="false" placeholder="Enter full name" maxlength="80">
+      </div>
+
+      <!-- Reason -->
+      <div class="section">
+        <span class="section-label">Reason for Visiting</span>
+        <div class="pill-row c3" id="k-reasons">
+          <button type="button" class="pill" data-v="Guest">Guest</button>
+          <button type="button" class="pill" data-v="Vendor">Vendor</button>
+          <button type="button" class="pill" data-v="Leasing">Leasing</button>
+        </div>
+      </div>
+
+      <!-- Guest fields -->
+      <div id="k-guest" class="section hidden">
+        <span class="section-label">Select Tower</span>
+        <div class="pill-row c2" id="k-g-tower">
+          <button type="button" class="pill" data-v="A">A-Tower (405)</button>
+          <button type="button" class="pill" data-v="B">B-Tower (401)</button>
+        </div>
+        <div class="field-block">
+          <span class="section-label">Unit Number</span>
+          <input class="kinput" id="k-unit" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 0602" maxlength="4">
+          <div class="tower-note">3 to 4 digits only</div>
+        </div>
+      </div>
+
+      <!-- Vendor fields -->
+      <div id="k-vendor" class="section hidden">
+        <span class="section-label">Company Name</span>
+        <input class="kinput" id="k-company" type="text" autocapitalize="words" autocomplete="off" placeholder="Company name" maxlength="80">
+        <div class="field-block">
+          <span class="section-label">Are you here for a resident?</span>
+          <div class="pill-row c2" id="k-v-res">
+            <button type="button" class="pill" data-v="Yes">Yes</button>
+            <button type="button" class="pill" data-v="No">No</button>
+          </div>
+        </div>
+        <div id="k-v-unit-wrap" class="hidden">
+          <div class="field-block">
+            <span class="section-label">Select Tower</span>
+            <div class="pill-row c2" id="k-v-tower">
+              <button type="button" class="pill" data-v="A">A-Tower (405)</button>
+              <button type="button" class="pill" data-v="B">B-Tower (401)</button>
+            </div>
+          </div>
+          <div class="field-block">
+            <span class="section-label">Resident Unit Number</span>
+            <input class="kinput" id="k-v-unit" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 1407" maxlength="4">
+            <div class="tower-note">3 to 4 digits only</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leasing fields -->
+      <div id="k-leasing" class="section hidden">
+        <span class="section-label">Do you have an appointment?</span>
+        <div class="pill-row c2" id="k-l-appt">
+          <button type="button" class="pill" data-v="Yes">Yes</button>
+          <button type="button" class="pill" data-v="No">No</button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button class="submit" id="k-submit">Sign In</button>
+      <div id="k-status" class="status"></div>
+
+      <div class="footer">
+        <span class="live-dot">●</span>
+        <span>Sign-ins are monitored in real time by the front desk</span>
+      </div>
+    </div>
+
+    <!-- Thank you screen -->
+    <div id="thankyou">
+      <div class="ty-icon">✓</div>
+      <h2 id="ty-name">You're signed in!</h2>
+      <p>Welcome to Astoria Central Park West.<br>Please proceed to the front desk.</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── Supabase config ──────────────────────────────────────────────────────── */
+const SB  = 'https://oltvblkmsjtmkstwmkps.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sdHZibGttc2p0bWtzdHdta3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjMwMzksImV4cCI6MjA5MDYzOTAzOX0.FlFkBe-z6U83tfEMSFE3AiNaSsBnShPLheNR1uSdaw4';
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let purpose = '', gTower = '', vRes = '', vTower = '', lAppt = '';
+let submitting = false;
+
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const digits = v => String(v||'').replace(/\D/g,'').slice(0,4);
+const validUnit = v => {
+  const d = digits(v);
+  if (d.length < 3 || d.length > 4) return false;
+  const fl = parseInt(d.length === 4 ? d.slice(0,2) : d.slice(0,1), 10);
+  const rm = parseInt(d.length === 4 ? d.slice(2) : d.slice(1), 10);
+  return fl >= 3 && fl <= 15 && rm >= 1 && rm <= 13;
+};
+const buildUnit = (t, v) => t && digits(v) ? t + digits(v) : '';
+
+function setStatus(type, msg) {
+  const el = $('k-status');
+  el.className = 'status ' + (type||'');
+  el.textContent = msg||'';
+}
+
+function setPill(groupId, val) {
+  $(groupId)?.querySelectorAll('.pill').forEach(b => b.classList.toggle('on', b.dataset.v === val));
+}
+
+function updateVisibility() {
+  $('k-guest').classList.toggle('hidden', purpose !== 'Guest');
+  $('k-vendor').classList.toggle('hidden', purpose !== 'Vendor');
+  $('k-leasing').classList.toggle('hidden', purpose !== 'Leasing');
+  $('k-v-unit-wrap').classList.toggle('hidden', vRes !== 'Yes');
+}
+
+/* ── Supabase calls (anon — no auth required) ────────────────────────────── */
+async function sbInsert(table, body) {
+  const r = await fetch(`${SB}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'apikey': KEY,
+      'Authorization': 'Bearer ' + KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(body)
+  });
+  return r.ok || r.status === 201;
+}
+
+async function sbLiveUpdate(data) {
+  try {
+    await fetch(`${SB}/rest/v1/kiosk_live?id=eq.1`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': KEY,
+        'Authorization': 'Bearer ' + KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ data, updated_at: new Date().toISOString() })
+    });
+  } catch(e) {}
+}
+
+/* ── Live update as user types ───────────────────────────────────────────── */
+let liveTimer = null;
+function scheduleLiveUpdate() {
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => {
+    sbLiveUpdate({
+      name: ($('k-name')?.value||'').trim(),
+      purpose,
+      unit: buildUnit(gTower, $('k-unit')?.value||''),
+      company: ($('k-company')?.value||'').trim(),
+      vendorResident: vRes,
+      vendorUnit: buildUnit(vTower, $('k-v-unit')?.value||''),
+      leasingAppt: lAppt,
+      _ts: new Date().toISOString()
+    });
+  }, 300);
+}
+
+/* ── Pill event handlers ─────────────────────────────────────────────────── */
+$('k-reasons').addEventListener('click', e => {
+  const b = e.target.closest('.pill'); if(!b) return;
+  purpose = b.dataset.v;
+  setPill('k-reasons', purpose);
+  gTower=''; vRes=''; vTower=''; lAppt='';
+  ['k-g-tower','k-v-res','k-v-tower','k-l-appt'].forEach(g => setPill(g,''));
+  ['k-unit','k-company','k-v-unit'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  updateVisibility(); setStatus(); scheduleLiveUpdate();
+});
+
+$('k-g-tower').addEventListener('click', e => {
+  const b = e.target.closest('.pill'); if(!b) return;
+  gTower = b.dataset.v; setPill('k-g-tower', gTower); scheduleLiveUpdate();
+});
+
+$('k-v-res').addEventListener('click', e => {
+  const b = e.target.closest('.pill'); if(!b) return;
+  vRes = b.dataset.v; setPill('k-v-res', vRes);
+  if (vRes !== 'Yes') { vTower=''; setPill('k-v-tower',''); const el=$('k-v-unit'); if(el) el.value=''; }
+  updateVisibility(); scheduleLiveUpdate();
+});
+
+$('k-v-tower').addEventListener('click', e => {
+  const b = e.target.closest('.pill'); if(!b) return;
+  vTower = b.dataset.v; setPill('k-v-tower', vTower); scheduleLiveUpdate();
+});
+
+$('k-l-appt').addEventListener('click', e => {
+  const b = e.target.closest('.pill'); if(!b) return;
+  lAppt = b.dataset.v; setPill('k-l-appt', lAppt); scheduleLiveUpdate();
+});
+
+['k-name','k-company'].forEach(id => {
+  $(id)?.addEventListener('input', () => { setStatus(); scheduleLiveUpdate(); });
+});
+['k-unit','k-v-unit'].forEach(id => {
+  const el = $(id); if(!el) return;
+  el.addEventListener('input', () => {
+    const c = digits(el.value); if(el.value !== c) el.value = c;
+    setStatus(); scheduleLiveUpdate();
+  });
+});
+
+/* ── Submit ──────────────────────────────────────────────────────────────── */
+$('k-submit').addEventListener('click', async () => {
+  if (submitting) return;
+  setStatus();
+
+  const name = ($('k-name')?.value||'').trim();
+  if (!name)     { setStatus('err','Please enter your name.'); return; }
+  if (!purpose)  { setStatus('err','Please select a reason for visiting.'); return; }
+
+  if (purpose === 'Guest') {
+    if (!gTower)                        { setStatus('err','Please select A-Tower or B-Tower.'); return; }
+    if (!validUnit($('k-unit')?.value)) { setStatus('err','Please enter a valid unit number.'); return; }
+  }
+  if (purpose === 'Vendor') {
+    if (!($('k-company')?.value||'').trim()) { setStatus('err','Please enter the company name.'); return; }
+    if (!vRes)                                { setStatus('err','Please indicate if you are visiting a resident.'); return; }
+    if (vRes === 'Yes') {
+      if (!vTower)                           { setStatus('err','Please select a tower.'); return; }
+      if (!validUnit($('k-v-unit')?.value))  { setStatus('err','Please enter a valid resident unit number.'); return; }
+    }
+  }
+  if (purpose === 'Leasing' && !lAppt) { setStatus('err','Please select whether you have an appointment.'); return; }
+
+  const unitFinal = purpose === 'Guest' ? buildUnit(gTower, $('k-unit')?.value) : '';
+  const vendorUnitFinal = (purpose === 'Vendor' && vRes === 'Yes') ? buildUnit(vTower, $('k-v-unit')?.value) : '';
+  const company = purpose === 'Vendor' ? ($('k-company')?.value||'').trim() : '';
+
+  const noteParts = [
+    company ? `Company: ${company}` : null,
+    vRes ? `Vendor for resident: ${vRes}` : null,
+    vendorUnitFinal ? `Vendor unit: ${vendorUnitFinal}` : null,
+    lAppt ? `Leasing appt: ${lAppt}` : null,
+    'kiosk'
+  ].filter(Boolean);
+
+  submitting = true;
+  $('k-submit').disabled = true;
+  $('k-submit').textContent = 'Submitting…';
+  setStatus('ok','Submitting…');
+
+  try {
+    const ok = await sbInsert('visitors', {
+      visitor_name: name,
+      purpose,
+      unit_number: unitFinal,
+      notes: noteParts.join(' · '),
+      sign_in_time: new Date().toISOString(),
+      submitted_by_name: 'Guest Kiosk'
+    });
+
+    // Update live state with submitted flag
+    await sbLiveUpdate({
+      name, purpose,
+      unit: unitFinal,
+      company,
+      vendorResident: vRes,
+      vendorUnit: vendorUnitFinal,
+      leasingAppt: lAppt,
+      submitted: true,
+      _ts: new Date().toISOString()
+    });
+
+    if (ok) {
+      // Show thank-you screen
+      $('form-area').style.display = 'none';
+      const ty = $('thankyou');
+      ty.style.display = 'block';
+      $('ty-name').textContent = `Welcome, ${name}!`;
+
+      // Auto-reset after 5 seconds
+      setTimeout(() => {
+        ty.style.display = 'none';
+        $('form-area').style.display = 'block';
+        // Reset all state
+        $('k-name').value = '';
+        ['k-unit','k-company','k-v-unit'].forEach(id => { const el=$(id); if(el) el.value=''; });
+        purpose=''; gTower=''; vRes=''; vTower=''; lAppt='';
+        ['k-reasons','k-g-tower','k-v-res','k-v-tower','k-l-appt'].forEach(g => setPill(g,''));
+        updateVisibility(); setStatus();
+        submitting = false;
+        $('k-submit').disabled = false;
+        $('k-submit').textContent = 'Sign In';
+        // Clear live state
+        sbLiveUpdate({});
+      }, 5000);
+    } else {
+      throw new Error('Insert returned non-ok');
+    }
+  } catch(err) {
+    console.error('Kiosk submit error:', err);
+    setStatus('err','Submission failed. Please try again or see the front desk.');
+    submitting = false;
+    $('k-submit').disabled = false;
+    $('k-submit').textContent = 'Sign In';
+  }
+});
+
+updateVisibility();
+</script>
+</body>
+</html>
