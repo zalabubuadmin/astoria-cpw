@@ -2188,6 +2188,14 @@ async function api(table, qs='', tok=null) {
   const r = await fetch(`${SB}/rest/v1/${table}${qs}`, {
     headers:{'apikey':KEY,'Authorization':'Bearer '+t,'Prefer':'count=exact'}
   });
+  // If 401, session expired - redirect to login
+  if (r.status === 401) {
+    console.warn('Session expired, redirecting to login');
+    sessionToken = null;
+    localStorage.removeItem('astoria_session');
+    location.reload();
+    return {data: null, total: 0};
+  }
   const total = r.headers.get('content-range')?.split('/')[1];
   const data = await r.json();
   return {data, total: total ? +total : null};
@@ -2336,14 +2344,32 @@ function finishLogin() {
   bootApp();
 }
 
-function restoreSession() {
+async function restoreSession() {
   const stored = localStorage.getItem('astoria_session');
   if (!stored) return false;
   try {
     const s = JSON.parse(stored);
-    sessionToken = s.token; currentUser = s.user; currentProfile = s.profile;
+    if (!s.token || !s.user || !s.profile) return false;
+    sessionToken = s.token;
+    currentUser = s.user;
+    currentProfile = s.profile;
+
+    // Verify token is still valid by pinging user_profiles
+    const test = await fetch(`${SB}/rest/v1/user_profiles?id=eq.${s.user.id}&select=id&limit=1`, {
+      headers: {'apikey': KEY, 'Authorization': 'Bearer ' + sessionToken}
+    });
+    if (test.status === 401) {
+      // Token expired - try to get fresh token using stored credentials
+      const authEmail = s.profile.auth_email || `${s.profile.username}@astoriacpw.internal`;
+      localStorage.removeItem('astoria_session');
+      sessionToken = null; currentUser = null; currentProfile = null;
+      return false;
+    }
     return true;
-  } catch { return false; }
+  } catch(e) {
+    localStorage.removeItem('astoria_session');
+    return false;
+  }
 }
 
 function doLogout() {
@@ -5077,7 +5103,7 @@ async function sendAI() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': atob('c2stYW50LWFwaTAzLUotSmtrUDcwUnVXMU9SWF9yaE9LSl9HdUIwdWlhRXNTSEFyWlN5YUcyckpHRlJKS0JPNEZKMVI1RUNTdGRIOE0zczhja3ZQUGFRaVBxbzFZXzcwdEdnLXZGZ0lvd0FB'),
+        'x-api-key': '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',
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
@@ -5226,12 +5252,15 @@ document.getElementById('login-username')?.addEventListener('keydown',e=>{if(e.k
 
 
 // Try restore session
-if(restoreSession()){
-  applyTheme(currentProfile?.theme||savedTheme);
-  bootApp();
-} else {
-  document.getElementById('login-screen').style.display='flex';
-}
+(async () => {
+  const sessionRestored = await restoreSession();
+  if(sessionRestored){
+    applyTheme(currentProfile?.theme||savedTheme);
+    bootApp();
+  } else {
+    document.getElementById('login-screen').style.display='flex';
+  }
+})();
 </script>
 <!-- ══ AI ASSISTANT ══════════════════════════════════════════════════════ -->
 <button id="ai-fab" onclick="toggleAI()" title="Ask Astoria AI" style="position:fixed;bottom:20px;left:20px;width:auto;height:32px;border-radius:16px;background:#c8a96a;color:#1a0f00;border:none;font-size:11.5px;font-weight:600;cursor:pointer;z-index:190;box-shadow:0 2px 10px rgba(200,169,106,.4);display:none;align-items:center;justify-content:center;padding:0 12px;gap:6px;font-family:'Outfit',sans-serif;letter-spacing:.02em;transition:all .2s;opacity:.85">
