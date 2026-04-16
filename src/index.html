@@ -2010,19 +2010,34 @@ textarea.input{resize:vertical;min-height:80px;}
       <button class="close-btn" onclick="closeOverlay('res-lookup-panel')" style="font-size:20px">✕</button>
     </div>
     <div style="display:grid;grid-template-columns:380px 1fr;height:calc(100% - 52px);overflow:hidden">
-      <!-- Resident search -->
+      <!-- Resident search + inline detail -->
       <div style="border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden">
-        <div style="padding:12px 14px;border-bottom:1px solid var(--line);flex-shrink:0">
-          <div class="field" style="width:100%">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Name, unit, CPW code…" id="rlp-q" oninput="filterRLP()" style="width:100%">
+        <!-- Search list -->
+        <div id="rlp-res-list" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+          <div style="padding:12px 14px;border-bottom:1px solid var(--line);flex-shrink:0">
+            <div class="field" style="width:100%">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" placeholder="Name, unit, CPW code…" id="rlp-q" oninput="filterRLP()" style="width:100%">
+            </div>
+          </div>
+          <div style="overflow-y:auto;flex:1">
+            <table style="width:100%;border-collapse:collapse">
+              <thead><tr>
+                <th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)">Unit</th>
+                <th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)">Resident(s)</th>
+                <th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)">CPW</th>
+              </tr></thead>
+              <tbody id="rlp-body"></tbody>
+            </table>
           </div>
         </div>
-        <div style="overflow-y:auto;flex:1">
-          <table style="width:100%;border-collapse:collapse">
-            <thead><tr><th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)">Unit</th><th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)">Resident(s)</th><th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)">CPW</th></tr></thead>
-            <tbody id="rlp-body"></tbody>
-          </table>
+        <!-- Inline detail view (replaces list when resident is selected) -->
+        <div id="rlp-inline-detail" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0">
+            <button class="btn btn-ghost btn-sm" onclick="rlpBack()">← Back</button>
+            <div id="rlp-detail-unit" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text)"></div>
+          </div>
+          <div id="rlp-detail-body" style="overflow-y:auto;flex:1;padding:14px 16px"></div>
         </div>
       </div>
       <!-- Kiosk monitor -->
@@ -2538,9 +2553,9 @@ function renderDashWidgets() {
       case 'quickcodes':
         el.innerHTML = `<div class="qa-strip">
           <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Luxer Master</div><div class="qa-value">63886388</div><div class="qa-sub">Password: 1Luxerone</div></div>
-          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Dry Cleaning</div><div class="qa-value">44332211</div><div class="qa-sub">Master code</div></div>
-          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Coffee Machine</div><div class="qa-value">234567</div><div class="qa-sub">Breakroom</div></div>
-          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Main Computer</div><div class="qa-value">401405</div><div class="qa-sub">or Astoria@401</div></div>
+          <div class="qa-card" onclick="goPage('codes')" style="background:var(--gold-bg);border-color:var(--gold-bd)"><div class="qa-label" style="color:var(--gold)">📦 Amazon / Luxer</div><div class="qa-value" style="font-size:18px">3958</div><div class="qa-sub">Amazon delivery code</div></div>
+          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Left Computer</div><div class="qa-value">401405</div><div class="qa-sub">or Astoria@401</div></div>
+          <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Right Computer</div><div class="qa-value">4015</div><div class="qa-sub">Front desk right</div></div>
         </div>`;
         break;
       case 'signin':
@@ -3037,7 +3052,7 @@ let resAll=[],resFil=[],currentEditResIdx=null;
 async function initRes(){
   if(!resAll.length){
     document.getElementById('res-body').innerHTML=spinRow(7);
-    const{data}=await api('residents','?select=*&order=unit_number.asc&limit=300',sessionToken);
+    const{data}=await api('residents','?select=*&order=unit_number.asc&limit=500',sessionToken);
     resAll=data;
   }
   filterRes();
@@ -3631,13 +3646,14 @@ async function runGS(q) {
 /* ═══════════════════════════════════════════════════════════════════════════
    RESIDENT LOOKUP PANEL (sign-in side-by-side view)
 ═══════════════════════════════════════════════════════════════════════════ */
-function openRLP() {
+async function openRLP() {
   document.getElementById('res-lookup-panel').classList.add('open');
   if (!resAll.length) {
-    initRes().then(() => renderRLP());
-  } else {
-    renderRLP();
+    // Load all residents for RLP
+    const {data} = await api('residents', '?select=*&order=unit_number.asc&limit=500', sessionToken);
+    resAll = data || [];
   }
+  renderRLP();
 }
 
 function filterRLP() {
@@ -3676,10 +3692,15 @@ function renderRLP() {
       onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''"
       onclick="showRLPDetail(${idx})">
       <td style="padding:9px 12px;font-family:'Geist Mono',monospace;font-size:12px;color:var(--gold);font-weight:500">${esc(r.unit_number)}</td>
-      <td style="padding:9px 12px;font-size:12.5px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${restricted?'var(--red)':'var(--text)'}">${esc(names)}</td>
+      <td style="padding:9px 12px;font-size:11.5px;max-width:200px;color:${restricted?'var(--red)':'var(--text)'};line-height:1.4">${(r.names||[]).map(n=>esc(n)).join('<br>')}</td>
       <td style="padding:9px 12px;font-family:'Geist Mono',monospace;font-size:13px;color:var(--gold2)">${esc(r.cpw_safelist_code)}</td>
     </tr>`;
   }).join('');
+}
+
+function rlpBack() {
+  document.getElementById('rlp-inline-detail').style.display = 'none';
+  document.getElementById('rlp-res-list').style.display = 'flex';
 }
 
 function showRLPDetail(idx) {
@@ -3689,21 +3710,29 @@ function showRLPDetail(idx) {
   const RKWS = ['NO ACCESS','NOT ALLOWED','NO ENTRY','RESTRICTED','DO NOT','TRESPASS','RESTRAINING','BANNED'];
   const restricted = RKWS.some(kw => (r.guests||'').toUpperCase().includes(kw));
   const names = (r.names||[]);
-  const namePills = names.map(n => `<div style="padding:6px 10px;background:var(--surface2);border:1px solid var(--line);border-radius:7px;font-size:13px;font-weight:500;margin-bottom:4px">${esc(n)}</div>`).join('');
+  const namePills = (r.names||[]).map((n,i) => {
+    // Each array entry may contain multiple names if imported concatenated
+    // Split on common delimiters and show each on its own pill
+    return `<div style="padding:7px 12px;background:var(--surface2);border:1px solid var(--line);border-radius:7px;font-size:13px;font-weight:500;margin-bottom:5px;color:var(--text)">${esc(n)}</div>`;
+  }).join('');
 
+  // Show inline detail panel inside RLP — no modal overlay
+  const detailEl = document.getElementById('rlp-inline-detail');
+  if (!detailEl) { document.getElementById('rlp-detail-modal').classList.add('open'); return; }
   document.getElementById('rlp-detail-unit').textContent = r.unit_number + ' — ' + r.tower + ' Tower';
+  detailEl.style.display = 'flex';
+  document.getElementById('rlp-res-list').style.display = 'none';
   document.getElementById('rlp-detail-body').innerHTML = `
     ${restricted ? `<div class="alert alert-red" style="margin-bottom:14px">⛔ ${esc(r.guests)}</div>` : ''}
     ${namePills}
     <div class="dl" style="margin-top:14px">
-      <div><div class="dt">CPW Code</div><div class="dd gold" style="font-size:24px">${esc(r.cpw_safelist_code)||'—'}</div></div>
+      <div><div class="dt">CPW Code</div><div class="dd gold" style="font-size:28px;font-weight:300">${esc(r.cpw_safelist_code)||'—'}</div></div>
       <div><div class="dt">QD Service</div><div class="dd">${hasQD?'<span class="chip chip-green">✓ Has Service</span>':'<span class="chip chip-gray">✗ No Service</span>'}</div></div>
       <div><div class="dt">Phone</div><div class="dd mono" style="font-size:12px">${esc((r.phone_numbers||[]).join(', '))||'—'}</div></div>
       <div><div class="dt">Access / HK</div><div class="dd">${esc(r.access_ok)||'—'}</div></div>
       <div class="dl-full"><div class="dt">Parking</div><div class="dd mono">${esc((r.parking_spots||[]).join(', '))||'—'}</div></div>
       ${r.guests && !restricted ? `<div class="dl-full"><div class="dt">Guest Notes</div><div class="dd" style="white-space:pre-wrap">${esc(r.guests)}</div></div>` : ''}
     </div>`;
-  document.getElementById('rlp-detail-modal').classList.add('open');
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -3843,8 +3872,9 @@ document.getElementById('pl-q')?.addEventListener('keydown',ev=>{if(ev.key==='En
 let adminUsers = [];
 
 async function loadAdmin(){
-  adminUsers = []; // always fresh load
+  adminUsers = [];
   const{data:users}=await api('user_profiles','?select=*&order=created_at.asc',sessionToken);
+  if(!users){console.error('loadAdmin: no users returned');return;}
   adminUsers = users;
   // Only manager+ can see full audit log
   const auditPanel = document.getElementById('audit-log-panel');
@@ -4370,8 +4400,128 @@ function clearOrkin() {
   addOrkinRow();
 }
 
-function printForm(id) {
-  window.print();
+function printForm(formId) {
+  // Build a clean printable version
+  const formData = {};
+  document.querySelectorAll('[id^="' + formId + '-"]').forEach(el => {
+    const key = el.id.replace(formId + '-', '');
+    if (el.type === 'radio') { if (el.checked) formData[key] = el.value; }
+    else formData[key] = el.value || '';
+  });
+
+  const printWin = window.open('', '_blank', 'width=800,height=900');
+  printWin.document.write(`<!DOCTYPE html><html><head>
+    <title>Astoria — Form</title>
+    <style>
+      body{font-family:Georgia,serif;padding:40px;color:#111;max-width:700px;margin:0 auto}
+      h1{font-size:24px;letter-spacing:.1em;text-align:center;margin-bottom:4px}
+      .sub{text-align:center;font-size:11px;letter-spacing:.15em;color:#666;margin-bottom:30px}
+      .field{margin-bottom:18px}
+      .label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:4px}
+      .value{border-bottom:1px solid #999;padding:4px 0;font-size:14px;min-height:24px;min-width:300px}
+      .row{display:flex;gap:30px}
+      .row .field{flex:1}
+      .info{font-size:11px;color:#666;margin-bottom:20px;line-height:1.6;border-bottom:1px solid #ccc;padding-bottom:14px}
+      @media print{body{padding:20px}}
+    </style>
+  </head><body>
+    <h1>ASTORIA</h1>
+    <div class="sub">CENTRAL PARK WEST · 401 ROCKEFELLER, IRVINE CA 92612 · (949) 751-0250</div>
+    ${buildPrintBody(formId, formData)}
+  </body></html>`);
+  printWin.document.close();
+  setTimeout(() => { printWin.print(); }, 400);
+}
+
+function buildPrintBody(formId, d) {
+  const f = (label, val) => `<div class="field"><div class="label">${label}</div><div class="value">${val||''}</div></div>`;
+  const row = (...items) => `<div class="row">${items.join('')}</div>`;
+
+  if (formId === 'inq') return `
+    <h2 style="text-align:center;font-size:16px;font-weight:normal;margin-bottom:6px">Inquiry Sheet</h2>
+    <p class="info">Please provide your contact information and what you are looking for in your next home. A member of our Leasing team will assist you shortly.</p>
+    ${row(f('Date', d['date']), f('Desired Move-In Date', d['movein']))}
+    ${f('Future Resident Name', d['name'])}
+    ${row(f('Phone Number', d['phone']), f('Email Address', d['email']))}
+    ${f('How did you hear about us?', d['source'])}
+    ${f('Desired Unit Type', d['unit'] || '☐ 1BR  ☐ 2BR  ☐ 2BR+Den  ☐ Penthouse')}
+    ${f('Desired Price Range', d['price'])}
+    ${f('Pets', d['pets'] || '☐ Yes (Cat/Dog)  ☐ No')}
+    <p style="text-align:center;margin-top:30px;font-size:12px">To get a first look at our community visit us online at <strong>www.astoriaapts.com</strong><br>Thank you for choosing Astoria at Central Park West!</p>`;
+
+  if (formId === 'kr') return `
+    <h2 style="text-align:center;font-size:16px;font-weight:normal;margin-bottom:6px">Key Return</h2>
+    <p class="info">If the Management Office is not open when you move out, please leave all sets of keys, AWIDs, and FOBs at the Concierge Desk in a marked envelope with this completed Key Return form.</p>
+    ${row(f('Apartment #', d['apt']), f('Move Out Date', d['date']))}
+    ${f('Resident Name', d['name'])}
+    ${row(f('Did you clean your apartment?', d['cleaned']), f('Outstanding balance paid?', d['paid']))}
+    <div class="field"><div class="label">Keys Returned</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px"><tr>
+      <td style="border:1px solid #ccc;padding:6px">Apartment: ${d['k-apt']||'___'}</td>
+      <td style="border:1px solid #ccc;padding:6px">Mailbox: ${d['k-mail']||'___'}</td>
+      <td style="border:1px solid #ccc;padding:6px">FOB: ${d['k-fob']||'___'}</td>
+    </tr><tr>
+      <td style="border:1px solid #ccc;padding:6px">Storage: ${d['k-stor']||'___'}</td>
+      <td style="border:1px solid #ccc;padding:6px">Bicycle Room: ${d['k-bike']||'___'}</td>
+      <td style="border:1px solid #ccc;padding:6px">AWID: ${d['k-awid']||'___'}</td>
+    </tr><tr>
+      <td style="border:1px solid #ccc;padding:6px">Wine Room: ${d['k-wine']||'___'}</td><td></td><td></td>
+    </tr></table></div>
+    ${row(f('Storage items collected?', d['stor']), f('Bike collected?', d['bike']))}
+    ${f('Forwarding Address', d['fwd'])}
+    <div style="margin-top:30px;font-size:12px;color:#666">We would love to hear your comments about your experience at Astoria at Central Park West.</div>
+    <div style="border-bottom:1px solid #ccc;margin-top:50px"></div>
+    <div style="font-size:11px;color:#666;margin-top:6px">Comments / Suggestions</div>`;
+
+  if (formId === 'gs') return `
+    <h2 style="text-align:center;font-size:16px;font-weight:normal;margin-bottom:6px">Hospitality Suite Reservation Agreement</h2>
+    <p class="info">Residence #B0512 · 2 Bedroom, 2 Bathroom · 1 King Bed, 1 Queen Bed · $299 per night · Parking #95/96 included<br>Reservation is not confirmed until the completed form and payment in full have been received.</p>
+    ${row(f('Resident Name', d['name']), f('Apartment', d['apt']))}
+    ${row(f('Check-In Date', d['in']), f('Check-Out Date', d['out']))}
+    ${f('Reservation Total', document.getElementById('gs-total')?.textContent || '')}
+    ${f('Guest Name(s)', d['guests'])}
+    <div style="margin-top:20px;font-size:12px;line-height:1.7;border-top:1px solid #ccc;padding-top:16px">
+      <strong>WAIVER OF INDEMNITY:</strong> Guest waives all claims against the owner for damages to personal property. Residents are responsible for missing or damaged items. Minimum $100 charge for damages including cleaning.
+    </div>
+    ${row(f('Resident Signature', ''), f('Date', ''))}
+    ${row(f('Management Signature', ''), f('Date', ''))}`;
+
+  if (formId === 'cr') return `
+    <h2 style="text-align:center;font-size:16px;font-weight:normal;margin-bottom:6px">Club Room / Terrace Rental Agreement</h2>
+    <p class="info">Residents of Astoria can request to reserve The Club Room and/or Terrace on an hourly basis with a two-hour minimum. Non-residents are not permitted to reserve amenities.</p>
+    ${row(f('Resident Name', d['name']), f('Apartment', d['apt']))}
+    ${row(f('Reservation Date', d['date']), f('Type of Event', d['event']))}
+    ${row(f('Start Time', d['start']), f('End Time', d['end']))}
+    ${row(f('Venue', d['venue'] || ''), f('Number of Attendees', d['att']))}
+    ${f('Hourly Rate / Total', document.getElementById('cr-total')?.textContent || '')}
+    <div style="margin-top:20px;font-size:12px;line-height:1.7;border-top:1px solid #ccc;padding-top:16px">Minimum deposit of $200 required. Non-refundable if cancelled within 24 hours. Maximum 40 people. No smoking. No pets.</div>
+    ${row(f('Resident Signature', ''), f('Date', ''))}
+    ${row(f('Management Signature', ''), f('Date', ''))}`;
+
+  if (formId === 'orkin') {
+    const rows = [];
+    document.querySelectorAll('#orkin-body tr').forEach(tr => {
+      const cells = tr.querySelectorAll('input,select');
+      rows.push([...cells].map(c => c.value || '').join(' | '));
+    });
+    return `<h2 style="text-align:center;font-size:16px;font-weight:normal;margin-bottom:20px">ORKIN Logbook Request</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:#f0f0f0">
+        <th style="border:1px solid #ccc;padding:7px">Date</th>
+        <th style="border:1px solid #ccc;padding:7px">Unit #</th>
+        <th style="border:1px solid #ccc;padding:7px">Target Organism</th>
+        <th style="border:1px solid #ccc;padding:7px">Location</th>
+        <th style="border:1px solid #ccc;padding:7px">Access</th>
+        <th style="border:1px solid #ccc;padding:7px">Date Treated</th>
+      </tr></thead><tbody>
+      ${[...document.querySelectorAll('#orkin-body tr')].map(tr => {
+        const cells = tr.querySelectorAll('input,select');
+        return `<tr>${[...cells].map(c => `<td style="border:1px solid #ccc;padding:6px">${c.value||''}</td>`).join('')}</tr>`;
+      }).join('')}
+      </tbody>
+    </table>`;
+  }
+  return `<p>Form: ${formId}</p>`;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -4847,11 +4997,11 @@ function toggleAI() {
   const panel = document.getElementById('ai-panel');
   const fab = document.getElementById('ai-fab');
   if (aiOpen) {
-    panel.classList.add('open');
+    panel.style.display = 'flex';
     fab.innerHTML = '✕';
     setTimeout(() => document.getElementById('ai-input')?.focus(), 100);
   } else {
-    panel.classList.remove('open');
+    panel.style.display = 'none';
     fab.innerHTML = '✦';
   }
 }
@@ -4922,7 +5072,7 @@ async function sendAI() {
 // Show AI FAB after login
 function initAI() {
   const fab = document.getElementById('ai-fab');
-  if (fab) fab.classList.add('visible');
+  if (fab) { fab.style.display = 'flex'; }
 }
 
 // Restore theme first (before session check) to prevent flash
@@ -4946,5 +5096,29 @@ if(restoreSession()){
   document.getElementById('login-screen').style.display='flex';
 }
 </script>
+<!-- ══ AI ASSISTANT ══════════════════════════════════════════════════════ -->
+<button id="ai-fab" onclick="toggleAI()" title="Ask AI Assistant" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:#c8a96a;color:#1a0f00;border:none;font-size:22px;cursor:pointer;z-index:190;box-shadow:0 4px 16px rgba(200,169,106,.4);display:none;align-items:center;justify-content:center;transition:all .2s;font-weight:bold">✦</button>
+
+<div id="ai-panel" style="position:fixed;bottom:88px;right:24px;width:380px;height:520px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;z-index:191">
+  <div style="padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <div style="width:32px;height:32px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:16px">✦</div>
+    <div style="flex:1">
+      <div style="font-weight:600;font-size:14px;color:var(--text)">Astoria Assistant</div>
+      <div style="font-size:10.5px;color:var(--muted)">Ask about post orders, procedures, or the app</div>
+    </div>
+    <button class="close-btn" onclick="toggleAI()">✕</button>
+  </div>
+  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">
+    <div style="max-width:88%;padding:9px 12px;border-radius:12px;border-bottom-left-radius:4px;font-size:13px;line-height:1.55;background:var(--surface2);border:1px solid var(--line);color:var(--text);align-self:flex-start">Hi! I can help with post orders, emergency procedures, resident lookups, codes, and app features. What do you need?</div>
+  </div>
+  <div style="padding:10px 12px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:flex-end;flex-shrink:0">
+    <textarea id="ai-input" placeholder="Ask anything…" rows="1"
+      style="flex:1;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;resize:none;min-height:38px;max-height:100px;outline:none;line-height:1.4"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+    <button onclick="sendAI()" id="ai-send" style="width:36px;height:36px;border-radius:10px;background:#c8a96a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a0f00;font-size:16px">➤</button>
+  </div>
+</div>
+
 </body>
 </html>
