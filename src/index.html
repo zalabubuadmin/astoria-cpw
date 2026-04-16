@@ -1129,29 +1129,36 @@ textarea.input{resize:vertical;min-height:80px;}
     </div>
   </div>
   <nav class="sb-nav">
+
     <div class="sb-group">Overview</div>
     <button class="sb-btn active" data-page="dashboard"><span class="ic">◈</span>Dashboard</button>
+
     <div class="sb-group">Quick Launch</div>
     <button class="sb-btn" onclick="document.getElementById('embed-minnow').classList.add('open')"><span class="ic">🫙</span>Minnow Pod</button>
     <button class="sb-btn" onclick="document.getElementById('embed-luxer').classList.add('open')"><span class="ic">📦</span>Luxer</button>
     <button class="sb-btn" onclick="document.getElementById('embed-gmail').classList.add('open')"><span class="ic">✉</span>Email</button>
     <button class="sb-btn" onclick="document.getElementById('embed-calendar').classList.add('open')"><span class="ic">📅</span>Calendar</button>
+
     <div class="sb-group">Operations</div>
     <button class="sb-btn" data-page="visitor-log"><span class="ic">📋</span>Visitor Log<span class="nb" id="nb-visitors">—</span></button>
     <button class="sb-btn" data-page="sign-in"><span class="ic">✚</span>Sign In Guest</button>
-    <button class="sb-btn" data-page="plate-lookup"><span class="ic">🔍</span>Plate Lookup</button>
+    <button class="sb-btn" onclick="openGuestLookupOverlay()"><span class="ic">🔍</span>Guest Lookup</button>
+    <button class="sb-btn" data-page="plate-lookup"><span class="ic">🚗</span>Plate Lookup</button>
     <button class="sb-btn" data-page="email-tools"><span class="ic">✉</span>Email Tools</button>
-    <div class="sb-group">Logs</div>
+
+    <div class="sb-group">Logs & Reports</div>
     <button class="sb-btn" data-page="shift-log"><span class="ic">📝</span>Shift Pass Downs</button>
+    <button class="sb-btn" data-page="citations-log"><span class="ic">⚠</span>Log Citation</button>
     <button class="sb-btn" data-page="luxer-audit"><span class="ic">📦</span>Luxer Audit</button>
     <button class="sb-btn" data-page="cleaning-log"><span class="ic">🧹</span>Cleaning Logs</button>
-    <button class="sb-btn" data-page="citations-log"><span class="ic">⚠</span>Log Citation</button>
+
     <div class="sb-group">Directory</div>
     <button class="sb-btn" data-page="residents"><span class="ic">🏠</span>Residents<span class="nb" id="nb-residents">—</span></button>
     <button class="sb-btn" data-page="vehicles"><span class="ic">🚗</span>Vehicles<span class="nb" id="nb-vehicles">—</span></button>
     <button class="sb-btn" data-page="citations"><span class="ic">📄</span>Citations<span class="nb" id="nb-citations">—</span></button>
     <button class="sb-btn" data-page="parking"><span class="ic">🅿</span>Parking</button>
     <button class="sb-btn" data-page="valet-map"><span class="ic">🚘</span>Valet Map</button>
+
     <div class="sb-group">Resources</div>
     <button class="sb-btn" data-page="staff"><span class="ic">👤</span>Staff & Contacts</button>
     <button class="sb-btn" data-page="vendors"><span class="ic">🔧</span>Vendors</button>
@@ -2065,6 +2072,26 @@ textarea.input{resize:vertical;min-height:80px;}
   </div>
 </div>
 
+<!-- ══ GUEST LOOKUP OVERLAY ════════════════════════════════════════════ -->
+<div class="embed-panel-overlay" id="guest-lookup-overlay">
+  <div class="embed-panel" style="width:700px;height:70vh">
+    <div class="embed-panel-head">
+      <div class="embed-panel-title">🔍 Guest Lookup</div>
+      <button class="close-btn" onclick="closeOverlay('guest-lookup-overlay')" style="font-size:20px">✕</button>
+    </div>
+    <div style="padding:14px 16px;border-bottom:1px solid var(--line);flex-shrink:0">
+      <div class="field" style="width:100%">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="glo-q" placeholder="Search by visitor name…" oninput="gloSearch(this.value)"
+          style="width:100%;font-size:15px" autocomplete="off">
+      </div>
+    </div>
+    <div id="glo-results" style="flex:1;overflow-y:auto;padding:12px 16px">
+      <div style="text-align:center;padding:40px;color:var(--dim);font-size:13px">Type a name to search visitor history</div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ CONFIRM DIALOG ═══════════════════════════════════════════════════ -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -2554,13 +2581,7 @@ function renderDashWidgets() {
         el.innerHTML = `<div class="panel">
           <div class="panel-head">
             <div class="panel-title">Quick Codes & Access</div>
-            <div class="panel-tools">
-              <input class="input" id="guest-search-input" placeholder="🔍 Search visitor by name…"
-                style="width:220px;padding:5px 10px;font-size:12px"
-                oninput="dashGuestSearch(this.value)">
-            </div>
           </div>
-          <div id="guest-search-results" style="display:none;padding:8px 14px 4px;border-bottom:1px solid var(--line)"></div>
           <div class="qa-strip" style="padding:12px 16px">
             <div class="qa-card" onclick="goPage('codes')"><div class="qa-label">Luxer Master</div><div class="qa-value">63886388</div><div class="qa-sub">Password: 1Luxerone</div></div>
             <div class="qa-card" onclick="goPage('codes')" style="background:var(--gold-bg);border-color:var(--gold-bd)"><div class="qa-label" style="color:var(--gold)">📦 Amazon / Luxer</div><div class="qa-value" style="font-size:18px">3958</div><div class="qa-sub">Amazon delivery code</div></div>
@@ -2596,6 +2617,7 @@ function renderDashWidgets() {
           </div>
         </div>`;
         break;
+
       case 'visitors':
         el.innerHTML = `<div class="panel">
           <div class="panel-head"><div class="panel-title">Recent Visitors</div><div class="panel-tools"><button class="btn btn-ghost btn-sm" onclick="goPage('visitor-log')">All →</button></div></div>
@@ -5009,11 +5031,11 @@ function toggleAI() {
   const fab = document.getElementById('ai-fab');
   if (aiOpen) {
     panel.style.display = 'flex';
-    fab.innerHTML = '✕';
+    fab.innerHTML = '<span style="font-size:17px">✕</span> Close';
     setTimeout(() => document.getElementById('ai-input')?.focus(), 100);
   } else {
     panel.style.display = 'none';
-    fab.innerHTML = '✦';
+    fab.innerHTML = '<span style="font-size:17px">✦</span> Astoria AI';
   }
 }
 
@@ -5050,7 +5072,12 @@ async function sendAI() {
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': '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',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
@@ -5086,6 +5113,46 @@ function initAI() {
   if (fab) { fab.style.display = 'flex'; }
 }
 
+/* ── Guest Lookup Overlay ─────────────────────────────────────────────── */
+function openGuestLookupOverlay() {
+  document.getElementById('guest-lookup-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('glo-q')?.focus(), 100);
+}
+
+let gloTimer = null;
+async function gloSearch(query) {
+  const el = document.getElementById('glo-results');
+  if (!el) return;
+  clearTimeout(gloTimer);
+  if (!query || query.length < 2) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--dim);font-size:13px">Type a name to search visitor history</div>';
+    return;
+  }
+  el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  gloTimer = setTimeout(async () => {
+    const enc = encodeURIComponent(query.trim());
+    const {data} = await api('visitors', `?visitor_name=ilike.*${enc}*&select=visitor_name,unit_number,purpose,sign_in_time,notes&order=sign_in_time.desc&limit=100`, sessionToken);
+    if (!data || !data.length) {
+      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--dim);font-size:13px">No visitors found matching "<strong>${esc(query)}</strong>"</div>`;
+      return;
+    }
+    el.innerHTML = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${data.length} result${data.length!==1?'s':''} for "<strong>${esc(query)}</strong>"</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Name</th><th>Unit</th><th>Purpose</th><th>Notes</th><th>Time</th></tr></thead>
+        <tbody>
+          ${data.map(v => `<tr>
+            <td class="td-bold">${esc(v.visitor_name)}</td>
+            <td class="td-mono td-gold">${esc(v.unit_number||'—')}</td>
+            <td class="td-dim">${esc(v.purpose||'')}</td>
+            <td class="td-dim td-sm">${esc(v.notes||'')}</td>
+            <td class="td-dim td-sm">${fT(v.sign_in_time)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`;
+  }, 300);
+}
+
 // Restore theme first (before session check) to prevent flash
 const savedTheme = localStorage.getItem('astoria_theme') || 'dark';
 applyTheme(savedTheme);
@@ -5108,9 +5175,11 @@ if(restoreSession()){
 }
 </script>
 <!-- ══ AI ASSISTANT ══════════════════════════════════════════════════════ -->
-<button id="ai-fab" onclick="toggleAI()" title="Ask AI Assistant" style="position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:#c8a96a;color:#1a0f00;border:none;font-size:22px;cursor:pointer;z-index:190;box-shadow:0 4px 16px rgba(200,169,106,.4);display:none;align-items:center;justify-content:center;transition:all .2s;font-weight:bold">✦</button>
+<button id="ai-fab" onclick="toggleAI()" title="Ask Astoria AI" style="position:fixed;bottom:24px;left:24px;width:auto;height:44px;border-radius:22px;background:#c8a96a;color:#1a0f00;border:none;font-size:13px;font-weight:700;cursor:pointer;z-index:190;box-shadow:0 4px 16px rgba(200,169,106,.45);display:none;align-items:center;justify-content:center;padding:0 18px;gap:8px;font-family:'Outfit',sans-serif;letter-spacing:.02em;transition:all .2s">
+  <span style="font-size:17px">✦</span> Astoria AI
+</button>
 
-<div id="ai-panel" style="position:fixed;bottom:88px;right:24px;width:380px;height:520px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;z-index:191">
+<div id="ai-panel" style="position:fixed;bottom:80px;left:24px;width:380px;height:520px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;z-index:191">
   <div style="padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:16px">✦</div>
     <div style="flex:1">
