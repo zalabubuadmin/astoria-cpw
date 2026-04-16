@@ -1,0 +1,64 @@
+name: Build & Release Astoria CPW
+
+on:
+  push:
+    tags:
+      - 'v*'           # triggers on v1.0.0, v1.2.3, etc.
+  workflow_dispatch:    # manual trigger from GitHub Actions UI
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: electron/package-lock.json
+
+      - name: Install dependencies
+        working-directory: electron
+        run: npm ci
+
+      - name: Copy icon assets
+        working-directory: electron
+        run: |
+          if (!(Test-Path "build")) { New-Item -ItemType Directory -Path "build" }
+          if (Test-Path "../build/icon.ico") {
+            Copy-Item "../build/icon.ico" "build/icon.ico"
+          }
+        shell: pwsh
+
+      - name: Build installer (.exe)
+        working-directory: electron
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AstoriaCPW-Windows
+          path: |
+            electron/dist/*.exe
+            electron/dist/latest.yml
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            electron/dist/*.exe
+            electron/dist/latest.yml
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

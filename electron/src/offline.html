@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astoria CPW — Offline</title>
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:#0d0d0e;color:#f8f6f2;
+    display:flex;align-items:center;justify-content:center;
+    height:100vh;flex-direction:column;gap:20px;
+    text-align:center;padding:40px;
+  }
+  .logo{
+    width:80px;height:80px;border-radius:16px;
+    background:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    margin-bottom:8px;padding:8px;
+  }
+  .logo-word{font-size:12px;font-weight:700;color:#1a1814;letter-spacing:.18em;}
+  .logo-line{width:50px;height:1px;background:#ccc;margin:4px 0;}
+  .logo-sub{font-size:5px;letter-spacing:.12em;color:#999;text-transform:uppercase;}
+  h1{font-size:22px;font-weight:500;color:#f8f6f2;}
+  p{font-size:14px;color:#696870;max-width:380px;line-height:1.7;}
+  button{
+    background:#c8a96a;color:#1a0f00;border:none;
+    border-radius:9px;padding:12px 28px;
+    font-size:14px;font-weight:600;cursor:pointer;
+    margin-top:8px;transition:background .15s;
+  }
+  button:hover{background:#e0c078;}
+  .detail{font-size:11px;color:#3e3d44;margin-top:4px;}
+</style>
+</head>
+<body>
+  <div class="logo">
+    <div class="logo-word">ASTORIA</div>
+    <div class="logo-line"></div>
+    <div class="logo-sub">CENTRAL PARK WEST</div>
+  </div>
+  <h1>No Connection</h1>
+  <p>Astoria CPW couldn't reach the server. Please check your internet connection and try again.</p>
+  <button onclick="location.reload()">Try Again</button>
+  <div class="detail">If this keeps happening, contact your IT administrator.</div>
+</body>
+</html>
