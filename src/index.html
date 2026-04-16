@@ -1193,6 +1193,28 @@ textarea.input{resize:vertical;min-height:80px;}
     <button onclick="toggleAI()" title="Ask Astoria AI" id="ai-topbar-btn" style="display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:var(--gold-bg);border:1px solid var(--gold-bd);color:var(--gold);cursor:pointer;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;transition:all .15s">
       <span>✦</span> AI
     </button>
+
+    <!-- AI Chat Panel - anchored top-right -->
+    <div id="ai-panel" style="display:none;position:fixed;top:56px;right:16px;width:370px;height:500px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.4);flex-direction:column;overflow:hidden;z-index:300">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:14px">✦</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px;color:var(--text)">Astoria Assistant</div>
+          <div style="font-size:10px;color:var(--muted)">Post orders, procedures, app features</div>
+        </div>
+        <button class="close-btn" onclick="toggleAI()">✕</button>
+      </div>
+      <div id="ai-messages" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="max-width:90%;padding:8px 11px;border-radius:10px;border-bottom-left-radius:3px;font-size:12.5px;line-height:1.5;background:var(--surface2);border:1px solid var(--line);color:var(--text);align-self:flex-start">Hi! Ask me about post orders, procedures, codes, or anything in the app.</div>
+      </div>
+      <div style="padding:8px 10px;border-top:1px solid var(--line);display:flex;gap:6px;align-items:flex-end;flex-shrink:0">
+        <textarea id="ai-input" placeholder="Ask anything…" rows="1"
+          style="flex:1;background:var(--surface2);border:1px solid var(--line2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12.5px;resize:none;min-height:34px;max-height:80px;outline:none;line-height:1.4"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
+        <button onclick="sendAI()" id="ai-send" style="width:32px;height:32px;border-radius:8px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#1a0f00;font-size:14px;flex-shrink:0">➤</button>
+      </div>
+    </div>
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-minnow').classList.add('open')" title="Minnow Pod"><span class="ql-icon">🫙</span><span style="font-size:11.5px">Minnow Pod</span></button>
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-luxer').classList.add('open')" title="LuxerOne"><span class="ql-icon">📦</span><span style="font-size:11.5px">Luxer</span></button>
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-gmail').classList.add('open')" title="Gmail"><span class="ql-icon">✉</span><span style="font-size:11.5px">Email</span></button>
@@ -2085,7 +2107,7 @@ textarea.input{resize:vertical;min-height:80px;}
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);flex-shrink:0">
       <div class="field" style="width:100%">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="glo-q" placeholder="Search by visitor name…" oninput="gloSearch(this.value)"
+        <input type="text" id="glo-q" placeholder="Search guest name (e.g. Jason)…" oninput="gloSearch(this.value)"
           style="width:100%;font-size:15px" autocomplete="off">
       </div>
     </div>
@@ -5057,14 +5079,16 @@ Answer concisely and practically. For emergencies, always remind staff to call 9
 function toggleAI() {
   aiOpen = !aiOpen;
   const panel = document.getElementById('ai-panel');
-  const fab = document.getElementById('ai-fab');
+  const btn = document.getElementById('ai-topbar-btn');
   if (aiOpen) {
     panel.style.display = 'flex';
-    fab.innerHTML = '<span style="font-size:17px">✕</span> Close';
+    if (btn) btn.style.background = 'var(--gold)';
+    if (btn) btn.style.color = '#1a0f00';
     setTimeout(() => document.getElementById('ai-input')?.focus(), 100);
   } else {
     panel.style.display = 'none';
-    fab.innerHTML = '<span style="font-size:17px">✦</span> Astoria AI';
+    if (btn) btn.style.background = 'var(--gold-bg)';
+    if (btn) btn.style.color = 'var(--gold)';
   }
 }
 
@@ -5119,9 +5143,12 @@ async function sendAI() {
 
     // Handle API errors
     if (!response.ok) {
-      const errMsg = data.error?.message || `API error ${response.status}`;
+      const errMsg = data.error?.message || '';
       document.getElementById('ai-thinking')?.remove();
-      appendAIMessage(`Error: ${errMsg}`, 'bot');
+      let msg = 'Error: ' + errMsg;
+      if (response.status === 401) msg = '⚠ AI not yet activated. Please add credits at console.anthropic.com to enable the assistant.';
+      else if (response.status === 429) msg = '⚠ Too many requests. Please wait a moment and try again.';
+      appendAIMessage(msg, 'bot');
       aiThinking = false;
       if (sendBtn) sendBtn.disabled = false;
       return;
@@ -5151,6 +5178,44 @@ function initAI() {
 }
 
 /* ── Guest Lookup Overlay ─────────────────────────────────────────────── */
+function gloShowResidentDirect(r) {
+  if (!r) return;
+  const RKWS = ['NO ACCESS','NOT ALLOWED','NO ENTRY','RESTRICTED','DO NOT','TRESPASS','RESTRAINING','BANNED'];
+  const restricted = RKWS.some(kw => (r.guests||'').toUpperCase().includes(kw));
+  const hasQD = r.quick_dial?.toString().toUpperCase() === 'TRUE';
+  const names = (r.names||[]);
+  const existing = document.getElementById('glo-resident-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'glo-resident-modal';
+  modal.className = 'modal-overlay';
+  modal.style.zIndex = '320';
+  modal.innerHTML = `
+    <div class="modal" style="width:560px;max-height:85vh;overflow-y:auto">
+      <div class="modal-head">
+        <div class="modal-title">${esc(r.unit_number)} — ${esc(r.tower)} Tower</div>
+        <button class="close-btn" onclick="document.getElementById('glo-resident-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body">
+        ${restricted ? `<div class="alert alert-red" style="margin-bottom:14px">⛔ ${esc(r.guests)}</div>` : ''}
+        ${names.map(n => `<div style="padding:7px 12px;background:var(--surface2);border:1px solid var(--line);border-radius:7px;font-size:13px;font-weight:500;margin-bottom:5px">${esc(n)}</div>`).join('')}
+        <div class="dl" style="margin-top:16px">
+          <div><div class="dt">CPW Code</div><div class="dd gold" style="font-size:28px;font-weight:300">${esc(r.cpw_safelist_code)||'—'}</div></div>
+          <div><div class="dt">QD Service</div><div class="dd">${hasQD?'<span class="chip chip-green">✓ Has Service</span>':'<span class="chip chip-gray">✗ No Service</span>'}</div></div>
+          <div><div class="dt">Phone</div><div class="dd mono" style="font-size:12px">${esc((r.phone_numbers||[]).join(', '))||'—'}</div></div>
+          <div><div class="dt">Access / HK</div><div class="dd">${esc(r.access_ok)||'—'}</div></div>
+          <div class="dl-full"><div class="dt">Parking</div><div class="dd mono">${esc((r.parking_spots||[]).join(', '))||'—'}</div></div>
+          ${r.guests ? `<div class="dl-full"><div class="dt" style="color:var(--amber)">Guest Notes</div><div class="dd" style="white-space:pre-wrap;color:var(--amber)">${esc(r.guests)}</div></div>` : ''}
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="document.getElementById('glo-resident-modal').remove()">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.classList.add('open');
+}
+
 async function gloShowResident(unitRaw) {
   if (!unitRaw || unitRaw === '—') return;
   const unit = normalizeUnit(unitRaw.toUpperCase());
@@ -5215,24 +5280,32 @@ async function gloSearch(query) {
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   gloTimer = setTimeout(async () => {
     const enc = encodeURIComponent(query.trim());
-    const {data} = await api('visitors', `?visitor_name=ilike.*${enc}*&select=visitor_name,unit_number,purpose,sign_in_time,notes&order=sign_in_time.desc&limit=100`, sessionToken);
+    // Search residents whose guest list contains the name
+    const {data} = await api('residents',
+      `?guests=ilike.*${enc}*&select=unit_number,tower,names,guests,cpw_safelist_code,access_ok,phone_numbers,parking_spots&order=unit_number.asc&limit=100`,
+      sessionToken);
     if (!data || !data.length) {
-      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--dim);font-size:13px">No visitors found matching "<strong>${esc(query)}</strong>"</div>`;
+      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--dim);font-size:13px">No residents have "<strong>${esc(query)}</strong>" listed as a guest</div>`;
       return;
     }
     el.innerHTML = `
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${data.length} result${data.length!==1?'s':''} for "<strong>${esc(query)}</strong>" · <em style="color:var(--dim)">Click a row to view resident info</em></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${data.length} unit${data.length!==1?'s':''} with "<strong>${esc(query)}</strong>" on guest list · <em style="color:var(--dim)">Click to view resident info</em></div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Name</th><th>Unit</th><th>Purpose</th><th>Notes</th><th>Time</th></tr></thead>
+        <thead><tr><th>Unit</th><th>Resident(s)</th><th>Guest Notes</th><th>CPW</th></tr></thead>
         <tbody>
-          ${data.map((v,i) => {gloVisitorData=gloVisitorData||[]; gloVisitorData[i]=v; return `<tr style="cursor:pointer" onclick="gloShowResident(gloVisitorData[${i}].unit_number)"
-            onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-            <td class="td-bold">${esc(v.visitor_name)}</td>
-            <td class="td-mono td-gold">${esc(v.unit_number||'—')}</td>
-            <td class="td-dim">${esc(v.purpose||'')}</td>
-            <td class="td-dim td-sm">${esc(v.notes||'')}</td>
-            <td class="td-dim td-sm">${fT(v.sign_in_time)}</td>
-          </tr>`;}).join('')}
+          ${data.map((r,i) => {
+            gloVisitorData = gloVisitorData||[];
+            gloVisitorData[i] = r;
+            const RKWS = ['NO ACCESS','NOT ALLOWED','RESTRAINING','BANNED'];
+            const restricted = RKWS.some(k => (r.guests||'').toUpperCase().includes(k));
+            return `<tr style="cursor:pointer;${restricted?'background:rgba(224,96,90,.06)':''}" onclick="gloShowResidentDirect(gloVisitorData[${i}])"
+              onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+              <td class="td-mono td-gold">${esc(r.unit_number)}</td>
+              <td class="td-bold" style="font-size:12px">${(r.names||[]).join(', ')}</td>
+              <td style="font-size:12px;color:${restricted?'var(--red)':'var(--amber)'};">${esc(r.guests||'')}</td>
+              <td class="td-mono" style="color:var(--gold2)">${esc(r.cpw_safelist_code||'—')}</td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table></div>`;
   }, 300);
@@ -5262,31 +5335,8 @@ document.getElementById('login-username')?.addEventListener('keydown',e=>{if(e.k
   }
 })();
 </script>
-<!-- ══ AI ASSISTANT ══════════════════════════════════════════════════════ -->
-<button id="ai-fab" onclick="toggleAI()" title="Ask Astoria AI" style="position:fixed;bottom:20px;left:20px;width:auto;height:32px;border-radius:16px;background:#c8a96a;color:#1a0f00;border:none;font-size:11.5px;font-weight:600;cursor:pointer;z-index:190;box-shadow:0 2px 10px rgba(200,169,106,.4);display:none;align-items:center;justify-content:center;padding:0 12px;gap:6px;font-family:'Outfit',sans-serif;letter-spacing:.02em;transition:all .2s;opacity:.85">
-  <span style="font-size:13px">✦</span> Astoria AI
-</button>
+<!-- AI panel is in topbar -->
 
-<div id="ai-panel" style="position:fixed;bottom:80px;left:24px;width:380px;height:520px;background:var(--surface);border:1px solid var(--gold-bd);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;z-index:191">
-  <div style="padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0">
-    <div style="width:32px;height:32px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:16px">✦</div>
-    <div style="flex:1">
-      <div style="font-weight:600;font-size:14px;color:var(--text)">Astoria Assistant</div>
-      <div style="font-size:10.5px;color:var(--muted)">Ask about post orders, procedures, or the app</div>
-    </div>
-    <button class="close-btn" onclick="toggleAI()">✕</button>
-  </div>
-  <div id="ai-messages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">
-    <div style="max-width:88%;padding:9px 12px;border-radius:12px;border-bottom-left-radius:4px;font-size:13px;line-height:1.55;background:var(--surface2);border:1px solid var(--line);color:var(--text);align-self:flex-start">Hi! I can help with post orders, emergency procedures, resident lookups, codes, and app features. What do you need?</div>
-  </div>
-  <div style="padding:10px 12px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:flex-end;flex-shrink:0">
-    <textarea id="ai-input" placeholder="Ask anything…" rows="1"
-      style="flex:1;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;resize:none;min-height:38px;max-height:100px;outline:none;line-height:1.4"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"
-      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-    <button onclick="sendAI()" id="ai-send" style="width:36px;height:36px;border-radius:10px;background:#c8a96a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a0f00;font-size:16px">➤</button>
-  </div>
-</div>
 
 </body>
 </html>
