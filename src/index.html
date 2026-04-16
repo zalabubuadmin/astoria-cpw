@@ -4360,7 +4360,7 @@ function addOrkinRow() {
   const tbody = document.getElementById('orkin-body');
   if (!tbody) return;
   const row = document.createElement('tr');
-  row.innerHTML = '<td><input class="input input-sm" type="date"></td><td><input class="input input-sm" placeholder="e.g. A0602" oninput="this.value=this.value.toUpperCase()"></td><td><input class="input input-sm" placeholder="e.g. Ants"></td><td><input class="input input-sm" placeholder="Kitchen…"></td><td><select class="input input-sm"><option>Resident</option><option>Orkin</option><option>Management</option></select></td><td><input class="input input-sm" type="date"></td><td><button class="btn btn-red btn-sm" onclick="this.closest('tr').remove()">✕</button></td>';
+  row.innerHTML = '<td><input class="input input-sm" type="date"></td><td><input class="input input-sm" placeholder="e.g. A0602" oninput="this.value=this.value.toUpperCase()"></td><td><input class="input input-sm" placeholder="e.g. Ants"></td><td><input class="input input-sm" placeholder="Kitchen"></td><td><select class="input input-sm"><option>Resident</option><option>Orkin</option><option>Management</option></select></td><td><input class="input input-sm" type="date"></td><td><button class="btn btn-red btn-sm" onclick="this.parentElement.parentElement.remove()">X</button></td>';
   tbody.appendChild(row);
 }
 
