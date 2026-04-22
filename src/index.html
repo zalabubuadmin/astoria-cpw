@@ -3729,79 +3729,47 @@ async function loadCodes(){
    ADMIN
 ═══════════════════════════════════════════════════════════════════════════ */
 async function loadAdmin(){
-  const roleLevel = {staff:1,supervisor:2,manager:3,admin:4};
-  const myLevel = roleLevel[currentProfile?.role] || 0;
-  const canDelete = myLevel >= 3;
-  const canEdit   = myLevel >= 2;
+  const rl={staff:1,supervisor:2,manager:3,admin:4};
+  const myLevel=rl[currentProfile?.role]||0;
+  const canDelete=myLevel>=3;
+  const canEdit=myLevel>=2;
 
-  // Show loading state
-  document.getElementById('admin-users').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">Loading users…</td></tr>';
-  document.getElementById('audit-body').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Loading audit log…</td></tr>';
+  document.getElementById('admin-users').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)"><div class="spinner"></div> Loading…</td></tr>';
 
-  // Use the raw fetch directly to bypass any caching issues
-  const tok = sessionToken;
+  const{data:users}=await api('user_profiles','?select=*&order=created_at.asc',sessionToken);
   
-  try {
-    // Fetch users - public read policy so anon key works too
-    const usersRes = await fetch(`${SB}/rest/v1/user_profiles?select=*&order=created_at.asc`, {
-      headers: {
-        'apikey': KEY,
-        'Authorization': 'Bearer ' + tok,
-        'Prefer': 'count=exact'
-      }
-    });
-    const users = await usersRes.json();
+  if(!users||!Array.isArray(users)){
+    document.getElementById('admin-users').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--red)">Failed to load users. Please sign out and sign back in.</td></tr>';
+  } else {
+    document.getElementById('admin-users').innerHTML=users.length?users.map(u=>`
+      <tr>
+        <td class="td-bold">${esc(u.full_name)}</td>
+        <td class="td-mono td-dim">${esc(u.username||'—')}</td>
+        <td>${roleChip(u.role)}</td>
+        <td class="td-dim td-sm">${esc(u.department||'—')}</td>
+        <td>${u.is_active?'<span class="chip chip-green">Active</span>':'<span class="chip chip-red">Inactive</span>'}</td>
+        <td style="display:flex;gap:6px">
+          ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">Edit</button>`:''}
+          ${canDelete&&u.username!=='admin'?`<button class="btn btn-red btn-sm" onclick="deactivateUser('${u.id}','${esc(u.full_name)}')">Deactivate</button>`:''}
+        </td>
+      </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--dim)">No users found.</td></tr>';
+  }
 
-    if (!usersRes.ok) {
-      document.getElementById('admin-users').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--red)">Error loading users: ${users.message || usersRes.status}. Please sign out and back in.</td></tr>`;
-    } else if (!users.length) {
-      document.getElementById('admin-users').innerHTML = emptyRow(6, 'No users found.');
-    } else {
-      document.getElementById('admin-users').innerHTML = users.map((u,i) => `
-        <tr>
-          <td class="td-bold">${esc(u.full_name)}</td>
-          <td class="td-mono td-dim">${esc(u.username||'—')}</td>
-          <td>${roleChip(u.role)}</td>
-          <td class="td-dim td-sm">${esc(u.department||'—')}</td>
-          <td>${u.is_active ? '<span class="chip chip-green">Active</span>' : '<span class="chip chip-red">Inactive</span>'}</td>
-          <td style="display:flex;gap:6px;flex-wrap:wrap">
-            ${canEdit ? `<button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">Edit</button>` : ''}
-            ${canDelete && u.username !== 'admin' ? `<button class="btn btn-red btn-sm" onclick="deactivateUser('${u.id}','${esc(u.full_name)}')">Deactivate</button>` : ''}
-          </td>
-        </tr>`).join('');
-    }
+  const{data:auditData,total}=await api('audit_log','?select=*&order=created_at.desc&limit=50',sessionToken);
+  const cnt=document.getElementById('audit-count');
+  if(cnt) cnt.textContent=total||auditData?.length||0;
 
-    // Fetch audit log - requires authenticated role
-    const auditRes = await fetch(`${SB}/rest/v1/audit_log?select=*&order=created_at.desc&limit=50`, {
-      headers: {
-        'apikey': KEY,
-        'Authorization': 'Bearer ' + tok,
-        'Prefer': 'count=exact'
-      }
-    });
-    const auditData = await auditRes.json();
-    const auditTotal = auditRes.headers.get('content-range')?.split('/')[1];
-
-    const cnt = document.getElementById('audit-count');
-    if (cnt) cnt.textContent = auditTotal || (Array.isArray(auditData) ? auditData.length : 0);
-
-    if (!auditRes.ok) {
-      document.getElementById('audit-body').innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Audit log requires authentication. Sign out and back in if this persists.</td></tr>`;
-    } else if (!Array.isArray(auditData) || !auditData.length) {
-      document.getElementById('audit-body').innerHTML = emptyRow(5, 'No audit entries yet.');
-    } else {
-      document.getElementById('audit-body').innerHTML = auditData.map(a => `
-        <tr>
-          <td class="td-dim td-sm td-mono">${fDT(a.created_at)}</td>
-          <td class="td-bold">${esc(a.user_name)}</td>
-          <td><span class="chip chip-gray" style="font-size:10px">${esc(a.action)}</span></td>
-          <td class="td-dim td-sm">${esc(a.table_name)}</td>
-          <td class="td-dim td-sm td-wrap">${esc(JSON.stringify(a.details||{}))}</td>
-        </tr>`).join('');
-    }
-
-  } catch(err) {
-    document.getElementById('admin-users').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--red)">Network error: ${err.message}</td></tr>`;
+  if(!auditData||!Array.isArray(auditData)){
+    document.getElementById('audit-body').innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No audit log data. This requires an authenticated session.</td></tr>';
+  } else {
+    document.getElementById('audit-body').innerHTML=auditData.length?auditData.map(a=>`
+      <tr>
+        <td class="td-dim td-sm td-mono">${fDT(a.created_at)}</td>
+        <td class="td-bold">${esc(a.user_name)}</td>
+        <td><span class="chip chip-gray" style="font-size:10px">${esc(a.action)}</span></td>
+        <td class="td-dim td-sm">${esc(a.table_name)}</td>
+        <td class="td-dim td-sm td-wrap">${esc(JSON.stringify(a.details||{}))}</td>
+      </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--dim)">No audit entries yet.</td></tr>';
   }
 }
 
@@ -4151,43 +4119,6 @@ document.getElementById('pl-q')?.addEventListener('keydown',ev=>{if(ev.key==='En
 ═══════════════════════════════════════════════════════════════════════════ */
 let adminUsers = [];
 
-async function loadAdmin(){
-  adminUsers = [];
-  const{data:users}=await api('user_profiles','?select=*&order=created_at.asc',sessionToken);
-  if(!users){console.error('loadAdmin: no users returned');return;}
-  adminUsers = users;
-  // Only manager+ can see full audit log
-  const auditPanel = document.getElementById('audit-log-panel');
-  if (auditPanel) auditPanel.style.display = roleLevel[currentProfile?.role] >= 3 ? 'flex' : 'none';
-  const{data:auditData,total}=await api('audit_log','?select=*&order=created_at.desc&limit=100',sessionToken);
-  const roleLevel={staff:1,supervisor:2,manager:3,admin:4};
-  const canDelete = roleLevel[currentProfile?.role] >= 3; // manager+
-  const canEdit   = roleLevel[currentProfile?.role] >= 2; // supervisor+
-
-  document.getElementById('admin-users').innerHTML=users.length?users.map((u,i)=>`
-    <tr>
-      <td class="td-bold">${esc(u.full_name)}</td>
-      <td class="td-mono td-dim">${esc(u.username||'—')}</td>
-      <td>${roleChip(u.role)}</td>
-      <td class="td-dim td-sm">${esc(u.department||'—')}</td>
-      <td>${u.is_active?'<span class="chip chip-green">Active</span>':'<span class="chip chip-red">Inactive</span>'}</td>
-      <td style="display:flex;gap:4px;flex-wrap:wrap">
-        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="openEditUser(${i})">✎ Edit</button>`:''}
-        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="openRoleChange(${i})">⇅ Role</button>`:''}
-        ${canDelete&&u.id!==currentUser.id?`<button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}','${esc(u.full_name)}')">✕ Delete</button>`:''}
-      </td>
-    </tr>`).join(''):emptyRow(6);
-
-  const cnt=document.getElementById('audit-count');if(cnt)cnt.textContent=total??auditData.length;
-  document.getElementById('audit-body').innerHTML=auditData.length?auditData.map(a=>`
-    <tr>
-      <td class="td-dim td-sm td-mono">${fDT(a.created_at)}</td>
-      <td class="td-bold">${esc(a.user_name)}</td>
-      <td><span class="chip chip-gray" style="font-size:10px">${esc(a.action)}</span></td>
-      <td class="td-dim td-sm">${esc(a.table_name)}</td>
-      <td class="td-dim td-sm td-wrap">${esc(JSON.stringify(a.details||{}))}</td>
-    </tr>`).join(''):emptyRow(5);
-}
 
 function openEditUser(i){
   const u=adminUsers[i];
