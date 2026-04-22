@@ -697,8 +697,7 @@ textarea.edit-input{min-height:80px;resize:vertical;}
 .drawer-body{flex:1;overflow-y:auto;padding:18px 22px;}
 
 /* ── MODAL ──────────────────────────────────────────────────────────────── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-.modal-overlay.open{display:flex;}
+
 .modal{background:var(--surface);border:1px solid var(--gold-bd);border-radius:14px;width:580px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.8);animation:fadeUp .2s ease;}
 @keyframes fadeUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 .modal-head{padding:17px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;}
@@ -1077,6 +1076,23 @@ body.font-mono .sb-btn,body.font-mono td,body.font-mono .dd,body.font-mono .btn{
 body.font-compact{font-size:12px}
 body.font-large{font-size:14.5px}
 .btn-blue{background:rgba(91,156,246,.1);border-color:rgba(91,156,246,.3);color:var(--blue);}
+
+/* ── CUSTOM THEME ── */
+body.custom{
+  --ink:var(--custom-bg, #0E0C0A);
+  --ink2:var(--custom-surface, #161410);
+  --ink3:var(--custom-surface2, #1C1A16);
+  --ink4:var(--custom-surface3, #242220);
+  --gold:var(--custom-accent, #C8A96A);
+  --gold2:var(--custom-accent2, #A0823A);
+  --gold-bg:var(--custom-accent-bg, rgba(200,169,106,.08));
+  --gold-bd:var(--custom-accent-bd, rgba(200,169,106,.22));
+  --text:var(--custom-text, #F2EDE4);
+  --text2:var(--custom-text2, #C8BEA8);
+  --muted:var(--custom-muted, #8A7E6A);
+  --dim:var(--custom-dim, #4A443C);
+  --bg:var(--ink);--surface:var(--ink2);--surface2:var(--ink3);--surface3:var(--ink4);
+}
 </style>
 </head>
 <body class="dark">
@@ -3389,6 +3405,8 @@ function renderRes(){
   }).join(''):emptyRow(7);
 }
 
+function closeResModal() { document.getElementById("res-modal-overlay")?.classList.remove("open"); }
+
 function openResDrawer(idx){
   const r=resAll[idx];
   if(!r) return;
@@ -3829,6 +3847,22 @@ async function loadCodes(){
 /* ═══════════════════════════════════════════════════════════════════════════
    ADMIN
 ═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ── Admin user action aliases ──────────────────────────────────── */
+function editUser(id) { openEditUser(id); }
+function deactivateUser(uid, name) {
+  showConfirm(
+    'Deactivate Account',
+    `Deactivate the account for <strong>${esc(name)}</strong>? They will no longer be able to log in.`,
+    async () => {
+      const ok = await apiPatch('user_profiles', `?id=eq.${uid}`, {is_active: false}, sessionToken);
+      if (ok) { auditLog('DEACTIVATE_USER','user_profiles',{uid,name}); loadAdmin(); }
+      else alert('Error deactivating user.');
+    },
+    'Deactivate'
+  );
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    ADMIN PANEL
@@ -4315,24 +4349,40 @@ async function deleteUser(uid,name){
     'Delete'
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   OVERLAY / MODAL CLOSE HELPERS
+   closeOverlay(), click-outside-to-close for all overlays
+═══════════════════════════════════════════════════════════════════ */
+function closeOverlay(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+
+// Click on the dark backdrop (not the modal content) to close overlays
+document.addEventListener('click', function(e) {
+  const overlayClasses = [
+    'modal-overlay','embed-panel-overlay','glo-overlay',
+    'gsearch-overlay','confirm-overlay','res-modal-overlay'
+  ];
+  if (overlayClasses.some(c => e.target.classList.contains(c))) {
+    e.target.classList.remove('open');
+  }
+}, true); // Use capture phase so it doesn't interfere with opener buttons
+
 document.addEventListener('keydown',ev=>{
   if((ev.metaKey||ev.ctrlKey)&&ev.key==='k'){ev.preventDefault();openGS();}
   if((ev.metaKey||ev.ctrlKey)&&ev.key==='l'){ev.preventDefault();if(currentUser)lockScreen();}
   if(ev.key==='Escape'){document.querySelectorAll('.overlay.open,.modal-overlay.open,.gsearch-overlay.open,.confirm-overlay.open,.embed-panel-overlay.open,.res-modal-overlay.open').forEach(el=>el.classList.remove('open'));closeGS();}
 });
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   AUTO-LOGOUT & LOCK SCREEN
-═══════════════════════════════════════════════════════════════════════════ */
-const AUTO_LOCK_MS  = 2 * 60 * 1000; // 2 minutes inactivity → lock
-let autoLockTimer   = null;
-let isLocked        = false;
-
-
 /* ═══════════════════════════════════════════════════════════════════
    AUTO-LOCK & LOCK SCREEN
    2-minute inactivity auto-lock, PIN/password unlock
 ═══════════════════════════════════════════════════════════════════ */
+const AUTO_LOCK_MS  = 2 * 60 * 1000; // 2 minutes inactivity → lock
+let autoLockTimer   = null;
+let isLocked        = false;
 function initAutoLogout() {
   resetAutoLock();
   // Reset timer on any user activity
@@ -4761,12 +4811,36 @@ function printForm(formId) {
     <div class="modal-body" style="display:flex;flex-direction:column;gap:22px">
       <div>
         <div class="dt" style="margin-bottom:10px">Color Theme</div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px">
           <button onclick="selectTheme('dark',this)" class="theme-opt" data-theme="dark" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#141210;cursor:pointer;font-size:11px;color:#F2EDE4;display:flex;flex-direction:column;align-items:center;gap:4px">🌑<span>Dark</span></button>
           <button onclick="selectTheme('light',this)" class="theme-opt" data-theme="light" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#F5F4F0;cursor:pointer;font-size:11px;color:#1a1814;display:flex;flex-direction:column;align-items:center;gap:4px">☀<span>Light</span></button>
           <button onclick="selectTheme('grey',this)" class="theme-opt" data-theme="grey" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#242426;cursor:pointer;font-size:11px;color:#E8E8EA;display:flex;flex-direction:column;align-items:center;gap:4px">🩶<span>Grey</span></button>
           <button onclick="selectTheme('midnight',this)" class="theme-opt" data-theme="midnight" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#0A0A1A;cursor:pointer;font-size:11px;color:#E8EAFF;display:flex;flex-direction:column;align-items:center;gap:4px">🌌<span>Midnight</span></button>
           <button onclick="selectTheme('warm',this)" class="theme-opt" data-theme="warm" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#211A14;cursor:pointer;font-size:11px;color:#F5EDE0;display:flex;flex-direction:column;align-items:center;gap:4px">🟤<span>Warm</span></button>
+          <button onclick="selectTheme('custom',this)" class="theme-opt" data-theme="custom" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:linear-gradient(135deg,#1a0a2e,#0a2e1a,#2e1a0a);cursor:pointer;font-size:11px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px">🎨<span>Custom</span></button>
+        </div>
+        <!-- Custom theme builder — shown when Custom is selected -->
+        <div id="custom-theme-builder" style="display:none;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:6px">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:10px;letter-spacing:.06em">CUSTOM COLOR BUILDER</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Background</label>
+              <input type="color" id="custom-bg" value="#0E0C0A" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Surface</label>
+              <input type="color" id="custom-surface" value="#161410" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Accent Color</label>
+              <input type="color" id="custom-accent" value="#C8A96A" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Text Color</label>
+              <input type="color" id="custom-text" value="#F2EDE4" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+          </div>
+          <button onclick="resetCustomTheme()" class="btn btn-ghost" style="margin-top:10px;font-size:11px;padding:4px 10px">Reset Custom</button>
         </div>
       </div>
       <div>
@@ -5609,11 +5683,60 @@ async function gloSearch(query) {
 let currentPrefs = {theme:'dark', font:'sans', size:'normal'};
 
 
+
+/* ── Custom Theme Builder ─────────────────────────────────────────── */
+function applyCustomTheme() {
+  const bg      = document.getElementById('custom-bg')?.value || '#0E0C0A';
+  const surface = document.getElementById('custom-surface')?.value || '#161410';
+  const accent  = document.getElementById('custom-accent')?.value || '#C8A96A';
+  const text    = document.getElementById('custom-text')?.value || '#F2EDE4';
+
+  // Derive lighter/darker variants
+  const r = document.documentElement;
+  r.style.setProperty('--custom-bg', bg);
+  r.style.setProperty('--custom-surface', surface);
+  r.style.setProperty('--custom-surface2', adjustBrightness(surface, 8));
+  r.style.setProperty('--custom-surface3', adjustBrightness(surface, 16));
+  r.style.setProperty('--custom-accent', accent);
+  r.style.setProperty('--custom-accent2', adjustBrightness(accent, -20));
+  r.style.setProperty('--custom-accent-bg', hexToRgba(accent, 0.08));
+  r.style.setProperty('--custom-accent-bd', hexToRgba(accent, 0.22));
+  r.style.setProperty('--custom-text', text);
+  r.style.setProperty('--custom-text2', hexToRgba(text, 0.7));
+  r.style.setProperty('--custom-muted', hexToRgba(text, 0.5));
+  r.style.setProperty('--custom-dim', hexToRgba(text, 0.25));
+
+  // Save custom colors to prefs
+  currentPrefs.customColors = {bg, surface, accent, text};
+  document.body.classList.remove('dark','light','grey','midnight','warm');
+  document.body.classList.add('custom');
+}
+
+function adjustBrightness(hex, amount) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return '#' + [r,g,b].map(v => Math.max(0,Math.min(255,v+amount)).toString(16).padStart(2,'0')).join('');
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function resetCustomTheme() {
+  ['custom-bg','custom-surface','custom-accent','custom-text'].forEach((id, i) => {
+    const defaults = ['#0E0C0A','#161410','#C8A96A','#F2EDE4'];
+    const el = document.getElementById(id);
+    if (el) el.value = defaults[i];
+  });
+  applyCustomTheme();
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    PREFERENCES
    Color themes, font style/size — saved per user account
 ═══════════════════════════════════════════════════════════════════ */
-function openPrefsPanel() {
+function openPrefsPanel(e) {
+  if (e) e.stopPropagation();
   loadPrefsFromStorage();
   highlightActivePrefs();
   document.getElementById('prefs-overlay').classList.add('open');
@@ -5646,7 +5769,24 @@ function highlightActivePrefs() {
     b.style.border = b.dataset.size === currentPrefs.size ? '2px solid var(--gold)' : '2px solid transparent');
 }
 
-function selectTheme(t) { currentPrefs.theme = t; applyAllPrefs(); highlightActivePrefs(); }
+function selectTheme(t) {
+  currentPrefs.theme = t;
+  applyAllPrefs();
+  highlightActivePrefs();
+  const builder = document.getElementById('custom-theme-builder');
+  if (builder) builder.style.display = t === 'custom' ? 'block' : 'none';
+  if (t === 'custom') {
+    // Restore saved custom colors if any
+    if (currentPrefs.customColors) {
+      const cc = currentPrefs.customColors;
+      ['bg','surface','accent','text'].forEach(k => {
+        const el = document.getElementById('custom-' + k);
+        if (el && cc[k]) el.value = cc[k];
+      });
+    }
+    applyCustomTheme();
+  }
+}
 function selectFont(f)   { currentPrefs.font  = f; applyAllPrefs(); highlightActivePrefs(); }
 function selectFontSize(s){ currentPrefs.size  = s; applyAllPrefs(); highlightActivePrefs(); }
 
