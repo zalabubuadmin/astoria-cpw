@@ -1070,12 +1070,61 @@ body.warm{
   --text:#F5EDE0;--text2:#C8A87A;--muted:#8A6A40;--dim:#4A3820;
   --bg:var(--ink);--surface:var(--ink2);--surface2:var(--ink3);--surface3:var(--ink4);
 }
-/* ── FONT PREFS ── */
-body.font-serif .sb-btn,body.font-serif td,body.font-serif .dd,body.font-serif .btn,body.font-serif .input{font-family:'Cormorant Garamond',Georgia,serif}
-body.font-mono .sb-btn,body.font-mono td,body.font-mono .dd,body.font-mono .btn{font-family:'Geist Mono',monospace}
-body.font-compact{font-size:12px}
-body.font-large{font-size:14.5px}
-.btn-blue{background:rgba(91,156,246,.1);border-color:rgba(91,156,246,.3);color:var(--blue);}
+/* ── FONT STYLES ─────────────────────────────────────────────────── */
+/* Sans (default — Outfit) */
+body.font-sans, body:not([class*="font-"]) { font-family:'Outfit',sans-serif; }
+
+/* Serif — Cormorant Garamond */
+body.font-serif,
+body.font-serif .sb-btn, body.font-serif td, body.font-serif .dd,
+body.font-serif .btn, body.font-serif .input, body.font-serif .panel-title,
+body.font-serif .topbar-title { font-family:'Cormorant Garamond',Georgia,serif; }
+
+/* Mono — Geist Mono */
+body.font-mono,
+body.font-mono .sb-btn, body.font-mono td, body.font-mono .dd,
+body.font-mono .btn, body.font-mono .input { font-family:'Geist Mono',monospace; }
+
+/* Rounded — system UI rounded */
+body.font-rounded,
+body.font-rounded .sb-btn, body.font-rounded td, body.font-rounded .dd,
+body.font-rounded .btn, body.font-rounded .input {
+  font-family: ui-rounded, 'SF Pro Rounded', 'Varela Round', 'Nunito', sans-serif;
+  letter-spacing:.01em;
+}
+
+/* Sharp — Inter tight */
+body.font-sharp,
+body.font-sharp .sb-btn, body.font-sharp td, body.font-sharp .dd,
+body.font-sharp .btn, body.font-sharp .input {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  letter-spacing:-.01em;
+  font-weight:400;
+}
+/* Font size scaling — explicit per-element rules for reliability */
+body.font-compact,
+body.font-compact .sb-btn,
+body.font-compact td, body.font-compact th,
+body.font-compact .btn, body.font-compact .input,
+body.font-compact .dd, body.font-compact .chip,
+body.font-compact .panel-title,
+body.font-compact .form-label,
+body.font-compact select, body.font-compact textarea { font-size:11.5px !important; }
+body.font-compact .stat-val { font-size:20px !important; }
+body.font-compact .kiosk-name { font-size:28px !important; }
+body.font-compact .topbar-title { font-size:15px !important; }
+
+body.font-large,
+body.font-large .sb-btn,
+body.font-large td, body.font-large th,
+body.font-large .btn, body.font-large .input,
+body.font-large .dd, body.font-large .chip,
+body.font-large .panel-title,
+body.font-large .form-label,
+body.font-large select, body.font-large textarea { font-size:15px !important; }
+body.font-large .stat-val { font-size:30px !important; }
+body.font-large .topbar-title { font-size:21px !important; }
+body.font-large .kiosk-name { font-size:40px !important; }
 
 /* ── CUSTOM THEME ── */
 body.custom{
@@ -1093,6 +1142,12 @@ body.custom{
   --dim:var(--custom-dim, #4A443C);
   --bg:var(--ink);--surface:var(--ink2);--surface2:var(--ink3);--surface3:var(--ink4);
 }
+
+/* Font size data-attribute fallback for extra specificity */
+[data-font-size="compact"] td, [data-font-size="compact"] .sb-btn,
+[data-font-size="compact"] .btn, [data-font-size="compact"] .input { font-size:11.5px !important; }
+[data-font-size="large"] td, [data-font-size="large"] .sb-btn,
+[data-font-size="large"] .btn, [data-font-size="large"] .input { font-size:15px !important; }
 </style>
 </head>
 <body class="dark">
@@ -5742,10 +5797,14 @@ function loadPrefsFromStorage() {
 
 function applyAllPrefs() {
   applyTheme(currentPrefs.theme);
-  document.body.classList.remove('font-sans','font-serif','font-mono');
-  if (currentPrefs.font !== 'sans') document.body.classList.add('font-' + currentPrefs.font);
+  // Apply font style — always set explicitly
+  document.body.classList.remove('font-sans','font-serif','font-mono','font-rounded','font-sharp');
+  document.body.classList.add('font-' + (currentPrefs.font || 'sans'));
+  // Apply font size — always set explicitly so CSS !important rules fire
   document.body.classList.remove('font-compact','font-normal','font-large');
-  if (currentPrefs.size !== 'normal') document.body.classList.add('font-' + currentPrefs.size);
+  document.body.classList.add('font-' + (currentPrefs.size || 'normal'));
+  // Also set data attribute for extra CSS specificity fallback
+  document.body.setAttribute('data-font-size', currentPrefs.size || 'normal');
   const icons = {dark:'🌑',light:'☀',grey:'🩶',midnight:'🌌',warm:'🟤'};
   const btn = document.getElementById('theme-btn');
   if (btn) btn.innerHTML = (icons[currentPrefs.theme]||'🌑') + ' Theme';
@@ -5754,8 +5813,16 @@ function applyAllPrefs() {
 function highlightActivePrefs() {
   document.querySelectorAll('.theme-opt').forEach(b =>
     b.style.border = b.dataset.theme === currentPrefs.theme ? '2px solid var(--gold)' : '2px solid transparent');
-  document.querySelectorAll('.font-opt').forEach(b =>
-    b.style.border = b.dataset.font === currentPrefs.font ? '2px solid var(--gold)' : '2px solid transparent');
+  document.querySelectorAll('.font-opt').forEach(b => {
+    const active = b.dataset.font === (currentPrefs.font || 'sans');
+    b.style.border = active ? '2px solid var(--gold)' : '2px solid transparent';
+    b.style.background = active ? 'var(--gold-bg)' : 'var(--surface2)';
+  });
+  document.querySelectorAll('.size-opt').forEach(b => {
+    const active = b.dataset.size === (currentPrefs.size || 'normal');
+    b.style.border = active ? '2px solid var(--gold)' : '2px solid transparent';
+    b.style.background = active ? 'var(--gold-bg)' : 'var(--surface2)';
+  });
   document.querySelectorAll('.size-opt').forEach(b =>
     b.style.border = b.dataset.size === currentPrefs.size ? '2px solid var(--gold)' : '2px solid transparent');
 }
@@ -6484,18 +6551,26 @@ function _startGlobalMonitorPoll() {
       </div>
       <div>
         <div class="dt" style="margin-bottom:10px">Font Style</div>
-        <div style="display:flex;gap:8px">
-          <button onclick="selectFont('sans',this)" class="font-opt" data-font="sans" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Outfit',sans-serif">Aa Sans</button>
-          <button onclick="selectFont('serif',this)" class="font-opt" data-font="serif" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Cormorant Garamond',serif">Aa Serif</button>
-          <button onclick="selectFont('mono',this)" class="font-opt" data-font="mono" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Geist Mono',monospace">Aa Mono</button>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+          <button onclick="selectFont('sans',this)" class="font-opt" data-font="sans" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:12px;color:var(--text);font-family:'Outfit',sans-serif;text-align:center">Aa<br><span style="font-size:9px;color:var(--muted)">Sans</span></button>
+          <button onclick="selectFont('serif',this)" class="font-opt" data-font="serif" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:12px;color:var(--text);font-family:'Cormorant Garamond',serif;text-align:center">Aa<br><span style="font-size:9px;color:var(--muted);font-family:'Outfit',sans-serif">Serif</span></button>
+          <button onclick="selectFont('mono',this)" class="font-opt" data-font="mono" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:12px;color:var(--text);font-family:'Geist Mono',monospace;text-align:center">Aa<br><span style="font-size:9px;color:var(--muted);font-family:'Outfit',sans-serif">Mono</span></button>
+          <button onclick="selectFont('rounded',this)" class="font-opt" data-font="rounded" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:12px;color:var(--text);font-family:'Nunito',sans-serif;text-align:center">Aa<br><span style="font-size:9px;color:var(--muted);font-family:'Outfit',sans-serif">Round</span></button>
+          <button onclick="selectFont('sharp',this)" class="font-opt" data-font="sharp" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;letter-spacing:-.02em;text-align:center">Aa<br><span style="font-size:9px;color:var(--muted);font-family:'Outfit',sans-serif">Sharp</span></button>
         </div>
       </div>
       <div>
         <div class="dt" style="margin-bottom:10px">Font Size</div>
         <div style="display:flex;gap:8px">
-          <button onclick="selectFontSize('compact',this)" class="size-opt" data-size="compact" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:11px;color:var(--muted)">Compact</button>
-          <button onclick="selectFontSize('normal',this)" class="size-opt" data-size="normal" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text)">Normal</button>
-          <button onclick="selectFontSize('large',this)" class="size-opt" data-size="large" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:15px;color:var(--text);font-weight:500">Large</button>
+          <button onclick="selectFontSize('compact',this)" class="size-opt" data-size="compact" style="flex:1;padding:12px 8px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;color:var(--muted);text-align:center;line-height:1.3">
+            <div style="font-size:11px;font-weight:600">Aa</div><div style="font-size:10px;margin-top:2px">Compact</div>
+          </button>
+          <button onclick="selectFontSize('normal',this)" class="size-opt" data-size="normal" style="flex:1;padding:12px 8px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;color:var(--text);text-align:center;line-height:1.3">
+            <div style="font-size:14px;font-weight:600">Aa</div><div style="font-size:10px;margin-top:2px">Normal</div>
+          </button>
+          <button onclick="selectFontSize('large',this)" class="size-opt" data-size="large" style="flex:1;padding:12px 8px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;color:var(--text);text-align:center;line-height:1.3">
+            <div style="font-size:18px;font-weight:600">Aa</div><div style="font-size:10px;margin-top:2px">Large</div>
+          </button>
         </div>
       </div>
     </div>
