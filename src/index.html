@@ -1165,8 +1165,8 @@ body.font-large{font-size:14.5px}
     <button class="sb-btn active" data-page="dashboard"><span class="ic">◈</span>Dashboard</button>
 
     <div class="sb-group">Quick Launch</div>
-    <button class="sb-btn" data-page="kiosk"><span class="ic">🖥</span>Guest Kiosk</button>
-    <button class="sb-btn" data-page="monitor"><span class="ic">📡</span>Live Monitor</button>
+    
+    
     <button class="sb-btn" onclick="document.getElementById('embed-minnow').classList.add('open')"><span class="ic">🫙</span>Minnow Pod</button>
     <button class="sb-btn" onclick="document.getElementById('embed-luxer').classList.add('open')"><span class="ic">📦</span>Luxer</button>
     <button class="sb-btn" onclick="document.getElementById('embed-gmail').classList.add('open')"><span class="ic">✉</span>Email</button>
@@ -1326,15 +1326,14 @@ body.font-large{font-size:14.5px}
       </div>
     </div>
   </div>
-  <!-- Kiosk launch + Native monitor -->
-  <div style="display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-    <button class="btn btn-ghost" onclick="goPage('kiosk')">🖥 Open Guest Kiosk</button>
-    <button class="btn btn-ghost" onclick="goPage('monitor')">📡 Open Monitor Full View</button>
-  </div>
+  <!-- Monitor below -->
   <div class="kiosk-panel">
     <div class="kiosk-head">
       <div class="kiosk-head-title"><div class="kiosk-dot" id="monitor-dot-si"></div>Sign-In Monitor — Live</div>
-      <button class="btn btn-ghost btn-sm" onclick="goPage('monitor')">↗ Full View</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" id="monitor-hold-btn" onclick="toggleMonitorHold()">⏸ Hold</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearMonitor()">✕ Clear</button>
+      </div>
     </div>
     <!-- Native embedded monitor — no iframe needed -->
     <div id="si-monitor-embed" style="padding:16px 18px;min-height:180px;display:flex;flex-direction:column;gap:10px">
@@ -2443,9 +2442,10 @@ function toggleTheme() {
 function applyTheme(theme) {
   document.body.classList.remove('dark','light','grey','midnight','warm');
   document.body.classList.add(theme || 'dark');
-  const isLight = theme === 'light';
+  const icons = {dark:'🌑',light:'☀',grey:'🩶',midnight:'🌌',warm:'🟤'};
+  const labels = {dark:'Dark',light:'Light',grey:'Grey',midnight:'Midnight',warm:'Warm'};
   const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = isLight ? '🌙 Dark Mode' : '☀ Light Mode';
+  if (btn) btn.innerHTML = (icons[theme]||'🌑') + ' ' + (labels[theme]||'Theme');
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -5660,6 +5660,34 @@ function emailForm(formId) {
   const body = Object.entries(fields).filter(([k,v])=>v)
     .map(([k,v]) => k.toUpperCase().replace(/-/g,' ') + ': ' + v).join('\n');
   window.open(`mailto:${tpl.to}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(body + '\n\n— Submitted via Astoria Concierge Portal')}`, '_blank');
+}
+
+
+/* ── Monitor Hold / Clear ───────────────────────────────────────────────── */
+let monitorHeld = false;
+
+function toggleMonitorHold() {
+  monitorHeld = !monitorHeld;
+  const btn = document.getElementById('monitor-hold-btn');
+  if (btn) btn.innerHTML = monitorHeld ? '▶ Resume' : '⏸ Hold';
+  if (btn) btn.style.color = monitorHeld ? 'var(--amber)' : '';
+}
+
+function clearMonitor() {
+  monitorHeld = false;
+  const btn = document.getElementById('monitor-hold-btn');
+  if (btn) btn.innerHTML = '⏸ Hold';
+  if (btn) btn.style.color = '';
+  // Clear the monitor display
+  const nameEl = document.getElementById('monitor-name');
+  const unitEl = document.getElementById('monitor-unit');
+  const purposeEl = document.getElementById('monitor-purpose');
+  if (nameEl) nameEl.textContent = 'Waiting for entry...';
+  if (unitEl) unitEl.textContent = '—';
+  if (purposeEl) purposeEl.textContent = '—';
+  // Reset any extra fields
+  ['monitor-company','monitor-vendor-unit','monitor-vendor-res','monitor-leasing']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.closest('.monitor-extra-row')?.style && (el.closest('.monitor-extra-row').style.display='none'); });
 }
 
 // Restore theme first (before session check) to prevent flash
