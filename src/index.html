@@ -4799,76 +4799,13 @@ function printForm(formId) {
   </head><body>
     <h1>ASTORIA</h1>
     <div class="sub">CENTRAL PARK WEST · 401 ROCKEFELLER, IRVINE CA 92612 · (949) 751-0250</div>
-    ${buildPrintBody(formId, formData)}
+        ${buildPrintBody(formId, formData)}
   
-<!-- ══ PREFERENCES PANEL ═══════════════════════════════════════════════ -->
-<div class="modal-overlay" id="prefs-overlay">
-  <div class="modal" style="width:500px">
-    <div class="modal-head">
-      <div class="modal-title">⚙ Preferences</div>
-      <button class="close-btn" onclick="document.getElementById('prefs-overlay').classList.remove('open')">✕</button>
-    </div>
-    <div class="modal-body" style="display:flex;flex-direction:column;gap:22px">
-      <div>
-        <div class="dt" style="margin-bottom:10px">Color Theme</div>
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px">
-          <button onclick="selectTheme('dark',this)" class="theme-opt" data-theme="dark" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#141210;cursor:pointer;font-size:11px;color:#F2EDE4;display:flex;flex-direction:column;align-items:center;gap:4px">🌑<span>Dark</span></button>
-          <button onclick="selectTheme('light',this)" class="theme-opt" data-theme="light" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#F5F4F0;cursor:pointer;font-size:11px;color:#1a1814;display:flex;flex-direction:column;align-items:center;gap:4px">☀<span>Light</span></button>
-          <button onclick="selectTheme('grey',this)" class="theme-opt" data-theme="grey" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#242426;cursor:pointer;font-size:11px;color:#E8E8EA;display:flex;flex-direction:column;align-items:center;gap:4px">🩶<span>Grey</span></button>
-          <button onclick="selectTheme('midnight',this)" class="theme-opt" data-theme="midnight" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#0A0A1A;cursor:pointer;font-size:11px;color:#E8EAFF;display:flex;flex-direction:column;align-items:center;gap:4px">🌌<span>Midnight</span></button>
-          <button onclick="selectTheme('warm',this)" class="theme-opt" data-theme="warm" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#211A14;cursor:pointer;font-size:11px;color:#F5EDE0;display:flex;flex-direction:column;align-items:center;gap:4px">🟤<span>Warm</span></button>
-          <button onclick="selectTheme('custom',this)" class="theme-opt" data-theme="custom" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:linear-gradient(135deg,#1a0a2e,#0a2e1a,#2e1a0a);cursor:pointer;font-size:11px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px">🎨<span>Custom</span></button>
-        </div>
-        <!-- Custom theme builder — shown when Custom is selected -->
-        <div id="custom-theme-builder" style="display:none;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:6px">
-          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:10px;letter-spacing:.06em">CUSTOM COLOR BUILDER</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Background</label>
-              <input type="color" id="custom-bg" value="#0E0C0A" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
-            </div>
-            <div>
-              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Surface</label>
-              <input type="color" id="custom-surface" value="#161410" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
-            </div>
-            <div>
-              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Accent Color</label>
-              <input type="color" id="custom-accent" value="#C8A96A" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
-            </div>
-            <div>
-              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Text Color</label>
-              <input type="color" id="custom-text" value="#F2EDE4" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
-            </div>
-          </div>
-          <button onclick="resetCustomTheme()" class="btn btn-ghost" style="margin-top:10px;font-size:11px;padding:4px 10px">Reset Custom</button>
-        </div>
-      </div>
-      <div>
-        <div class="dt" style="margin-bottom:10px">Font Style</div>
-        <div style="display:flex;gap:8px">
-          <button onclick="selectFont('sans',this)" class="font-opt" data-font="sans" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Outfit',sans-serif">Aa Sans</button>
-          <button onclick="selectFont('serif',this)" class="font-opt" data-font="serif" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Cormorant Garamond',serif">Aa Serif</button>
-          <button onclick="selectFont('mono',this)" class="font-opt" data-font="mono" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Geist Mono',monospace">Aa Mono</button>
-        </div>
-      </div>
-      <div>
-        <div class="dt" style="margin-bottom:10px">Font Size</div>
-        <div style="display:flex;gap:8px">
-          <button onclick="selectFontSize('compact',this)" class="size-opt" data-size="compact" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:11px;color:var(--muted)">Compact</button>
-          <button onclick="selectFontSize('normal',this)" class="size-opt" data-size="normal" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text)">Normal</button>
-          <button onclick="selectFontSize('large',this)" class="size-opt" data-size="large" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:15px;color:var(--text);font-weight:500">Large</button>
-        </div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="resetPrefs()">Reset</button>
-      <button class="btn btn-primary" onclick="savePrefs()">Save Preferences</button>
-    </div>
-  </div>
 </div>
+
 </body></html>`);
   printWin.document.close();
-  setTimeout(() => { printWin.print(); }, 400);
+  setTimeout(() => { printWin.focus(); printWin.print(); }, 500);
 }
 
 function buildPrintBody(formId, d) {
@@ -6432,6 +6369,72 @@ function _startGlobalMonitorPoll() {
 }
 
 </script>
+
+<!-- ══ PREFERENCES PANEL ═══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="prefs-overlay">
+  <div class="modal" style="width:500px">
+    <div class="modal-head">
+      <div class="modal-title">⚙ Preferences</div>
+      <button class="close-btn" onclick="document.getElementById('prefs-overlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:22px">
+      <div>
+        <div class="dt" style="margin-bottom:10px">Color Theme</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px">
+          <button onclick="selectTheme('dark',this)" class="theme-opt" data-theme="dark" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#141210;cursor:pointer;font-size:11px;color:#F2EDE4;display:flex;flex-direction:column;align-items:center;gap:4px">🌑<span>Dark</span></button>
+          <button onclick="selectTheme('light',this)" class="theme-opt" data-theme="light" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#F5F4F0;cursor:pointer;font-size:11px;color:#1a1814;display:flex;flex-direction:column;align-items:center;gap:4px">☀<span>Light</span></button>
+          <button onclick="selectTheme('grey',this)" class="theme-opt" data-theme="grey" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#242426;cursor:pointer;font-size:11px;color:#E8E8EA;display:flex;flex-direction:column;align-items:center;gap:4px">🩶<span>Grey</span></button>
+          <button onclick="selectTheme('midnight',this)" class="theme-opt" data-theme="midnight" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#0A0A1A;cursor:pointer;font-size:11px;color:#E8EAFF;display:flex;flex-direction:column;align-items:center;gap:4px">🌌<span>Midnight</span></button>
+          <button onclick="selectTheme('warm',this)" class="theme-opt" data-theme="warm" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#211A14;cursor:pointer;font-size:11px;color:#F5EDE0;display:flex;flex-direction:column;align-items:center;gap:4px">🟤<span>Warm</span></button>
+          <button onclick="selectTheme('custom',this)" class="theme-opt" data-theme="custom" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:linear-gradient(135deg,#1a0a2e,#0a2e1a,#2e1a0a);cursor:pointer;font-size:11px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px">🎨<span>Custom</span></button>
+        </div>
+        <!-- Custom theme builder — shown when Custom is selected -->
+        <div id="custom-theme-builder" style="display:none;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:6px">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:10px;letter-spacing:.06em">CUSTOM COLOR BUILDER</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Background</label>
+              <input type="color" id="custom-bg" value="#0E0C0A" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Surface</label>
+              <input type="color" id="custom-surface" value="#161410" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Accent Color</label>
+              <input type="color" id="custom-accent" value="#C8A96A" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--dim);display:block;margin-bottom:4px">Text Color</label>
+              <input type="color" id="custom-text" value="#F2EDE4" oninput="applyCustomTheme()" style="width:100%;height:32px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:none">
+            </div>
+          </div>
+          <button onclick="resetCustomTheme()" class="btn btn-ghost" style="margin-top:10px;font-size:11px;padding:4px 10px">Reset Custom</button>
+        </div>
+      </div>
+      <div>
+        <div class="dt" style="margin-bottom:10px">Font Style</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="selectFont('sans',this)" class="font-opt" data-font="sans" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Outfit',sans-serif">Aa Sans</button>
+          <button onclick="selectFont('serif',this)" class="font-opt" data-font="serif" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Cormorant Garamond',serif">Aa Serif</button>
+          <button onclick="selectFont('mono',this)" class="font-opt" data-font="mono" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Geist Mono',monospace">Aa Mono</button>
+        </div>
+      </div>
+      <div>
+        <div class="dt" style="margin-bottom:10px">Font Size</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="selectFontSize('compact',this)" class="size-opt" data-size="compact" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:11px;color:var(--muted)">Compact</button>
+          <button onclick="selectFontSize('normal',this)" class="size-opt" data-size="normal" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text)">Normal</button>
+          <button onclick="selectFontSize('large',this)" class="size-opt" data-size="large" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:15px;color:var(--text);font-weight:500">Large</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="resetPrefs()">Reset</button>
+      <button class="btn btn-primary" onclick="savePrefs()">Save Preferences</button>
+    </div>
+  </div>
+
 <!-- AI panel is in topbar -->
 
 
