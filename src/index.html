@@ -142,7 +142,6 @@ body.light .login-tab.active{box-shadow:0 1px 4px rgba(0,0,0,.1);}
 .btn-sm{padding:5px 10px;font-size:11.5px;}
 .btn-red{background:rgba(224,96,90,.1);border-color:rgba(224,96,90,.3);color:var(--red);}
 .btn-blue{background:rgba(91,156,246,.1);border-color:rgba(91,156,246,.3);color:var(--blue);}
-.btn-blue{background:rgba(91,156,246,.1);border-color:rgba(91,156,246,.3);color:var(--blue);}
 .btn-green{background:rgba(77,184,144,.1);border-color:rgba(77,184,144,.3);color:var(--green);}
 
 /* ── CONTENT ────────────────────────────────────────────────────────────── */
@@ -582,7 +581,6 @@ body.light .login-tab.active{box-shadow:0 1px 4px rgba(0,0,0,.1);}
 .btn-ghost:hover{border-color:var(--line2);color:var(--text);background:var(--surface2);}
 .btn-sm{padding:5px 10px;font-size:11.5px;}
 .btn-red{background:rgba(224,96,90,.1);border-color:rgba(224,96,90,.3);color:var(--red);}
-.btn-blue{background:rgba(91,156,246,.1);border-color:rgba(91,156,246,.3);color:var(--blue);}
 .btn-blue{background:rgba(91,156,246,.1);border-color:rgba(91,156,246,.3);color:var(--blue);}
 .btn-green{background:rgba(77,184,144,.1);border-color:rgba(77,184,144,.3);color:var(--green);}
 
@@ -1056,7 +1054,6 @@ body.grey{
   --gold:#A8A8B0;--gold2:#C8C8D0;--gold-bg:rgba(168,168,176,.08);--gold-bd:rgba(168,168,176,.2);
   --text:#E8E8EA;--text2:#AEAEB2;--muted:#8E8E93;--dim:#48484A;
   --bg:var(--ink);--surface:var(--ink2);--surface2:var(--ink3);--surface3:var(--ink4);
-  --green:#32D74B;--red:#FF453A;--amber:#FF9F0A;
 }
 /* ── MIDNIGHT THEME ── */
 body.midnight{
@@ -1065,7 +1062,6 @@ body.midnight{
   --gold:#7B8CFF;--gold2:#9BA8FF;--gold-bg:rgba(123,140,255,.08);--gold-bd:rgba(123,140,255,.22);
   --text:#E8EAFF;--text2:#A8AACC;--muted:#6868AA;--dim:#30306A;
   --bg:var(--ink);--surface:var(--ink2);--surface2:var(--ink3);--surface3:var(--ink4);
-  --green:#4ADE80;--red:#F87171;--amber:#FBBF24;
 }
 /* ── WARM THEME ── */
 body.warm{
@@ -1074,17 +1070,13 @@ body.warm{
   --gold:#E8A84A;--gold2:#F0C070;--gold-bg:rgba(232,168,74,.08);--gold-bd:rgba(232,168,74,.22);
   --text:#F5EDE0;--text2:#C8A87A;--muted:#8A6A40;--dim:#4A3820;
   --bg:var(--ink);--surface:var(--ink2);--surface2:var(--ink3);--surface3:var(--ink4);
-  --green:#6EE7B7;--red:#FCA5A5;--amber:#FCD34D;
 }
-
-/* ── FONT PREFERENCES ── */
-body.font-compact{--font-size-base:12px}
-body.font-normal{--font-size-base:13px}
-body.font-large{--font-size-base:14.5px}
-body.font-serif .sb-btn,.sb-btn,.td,.dd,.panel-title,.input,
-body.font-serif td,body.font-serif .btn{font-family:'Cormorant Garamond',Georgia,serif}
-body.font-mono .sb-btn,body.font-mono td,body.font-mono .dd,
-body.font-mono .btn{font-family:'Geist Mono',monospace}
+/* ── FONT PREFS ── */
+body.font-serif .sb-btn,body.font-serif td,body.font-serif .dd,body.font-serif .btn,body.font-serif .input{font-family:'Cormorant Garamond',Georgia,serif}
+body.font-mono .sb-btn,body.font-mono td,body.font-mono .dd,body.font-mono .btn{font-family:'Geist Mono',monospace}
+body.font-compact{font-size:12px}
+body.font-large{font-size:14.5px}
+.btn-blue{background:rgba(91,156,246,.1);border-color:rgba(91,156,246,.3);color:var(--blue);}
 </style>
 </head>
 <body class="dark">
@@ -1173,6 +1165,8 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
     <button class="sb-btn active" data-page="dashboard"><span class="ic">◈</span>Dashboard</button>
 
     <div class="sb-group">Quick Launch</div>
+    <button class="sb-btn" data-page="kiosk"><span class="ic">🖥</span>Guest Kiosk</button>
+    <button class="sb-btn" data-page="monitor"><span class="ic">📡</span>Live Monitor</button>
     <button class="sb-btn" onclick="document.getElementById('embed-minnow').classList.add('open')"><span class="ic">🫙</span>Minnow Pod</button>
     <button class="sb-btn" onclick="document.getElementById('embed-luxer').classList.add('open')"><span class="ic">📦</span>Luxer</button>
     <button class="sb-btn" onclick="document.getElementById('embed-gmail').classList.add('open')"><span class="ic">✉</span>Email</button>
@@ -1258,7 +1252,7 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-luxer').classList.add('open')" title="LuxerOne"><span class="ql-icon">📦</span><span style="font-size:11.5px">Luxer</span></button>
     <button class="ql-btn btn-sm" onclick="document.getElementById('embed-gmail').classList.add('open')" title="Gmail"><span class="ql-icon">✉</span><span style="font-size:11.5px">Email</span></button>
     <div style="width:1px;background:var(--line2);height:22px;margin:0 4px"></div>
-    <button class="theme-toggle" onclick="openPrefsPanel()" id="theme-btn">☀ Light Mode</button>
+    <button class="theme-toggle" onclick="openPrefsPanel()" id="theme-btn">🌑 Theme</button>
     <button class="btn btn-ghost btn-sm" onclick="openGS()">🔍 Search</button>
     <button class="btn btn-primary btn-sm" onclick="goPage('sign-in')">✚ Sign In Guest</button>
   </div>
@@ -1332,13 +1326,40 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
       </div>
     </div>
   </div>
-  <!-- Kiosk Monitor — full width -->
+  <!-- Kiosk launch + Native monitor -->
+  <div style="display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+    <button class="btn btn-ghost" onclick="goPage('kiosk')">🖥 Open Guest Kiosk</button>
+    <button class="btn btn-ghost" onclick="goPage('monitor')">📡 Open Monitor Full View</button>
+  </div>
   <div class="kiosk-panel">
     <div class="kiosk-head">
-      <div class="kiosk-head-title"><div class="kiosk-dot"></div>Sign-In Monitor — Live View</div>
-      <a href="https://script.google.com/macros/s/AKfycbwf10Q1DU8nAztpTCu5h9c4-LCWCMznoaVLpLHEgd6HV0AGiMOBY70GjkzbsXr7qwl98g/exec?view=monitor" target="_blank" class="btn btn-ghost btn-sm">↗ Open Full Screen</a>
+      <div class="kiosk-head-title"><div class="kiosk-dot" id="monitor-dot-si"></div>Sign-In Monitor — Live</div>
+      <button class="btn btn-ghost btn-sm" onclick="goPage('monitor')">↗ Full View</button>
     </div>
-    <iframe class="kiosk-frame" src="https://script.google.com/macros/s/AKfycbwf10Q1DU8nAztpTCu5h9c4-LCWCMznoaVLpLHEgd6HV0AGiMOBY70GjkzbsXr7qwl98g/exec?view=monitor" title="Sign-In Monitor" sandbox="allow-scripts allow-same-origin allow-popups" loading="lazy"></iframe>
+    <!-- Native embedded monitor — no iframe needed -->
+    <div id="si-monitor-embed" style="padding:16px 18px;min-height:180px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Current Visitor</div>
+          <div id="sim-name" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--text);line-height:1.1">Waiting…</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="padding:10px 14px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;min-width:90px">
+            <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:4px">Reason</div>
+            <div id="sim-purpose" style="font-size:17px;font-weight:600;color:var(--text)">—</div>
+          </div>
+          <div style="padding:10px 14px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;min-width:90px">
+            <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:4px">Unit</div>
+            <div id="sim-unit" style="font-size:17px;font-weight:600;color:var(--gold)">—</div>
+          </div>
+          <div style="padding:10px 14px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;min-width:90px">
+            <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:4px">Company</div>
+            <div id="sim-company" style="font-size:15px;font-weight:600;color:var(--muted)">—</div>
+          </div>
+        </div>
+      </div>
+      <div id="sim-updated" style="font-size:10px;color:var(--dim)">Polling…</div>
+    </div>
   </div>
 </div>
 
@@ -1685,7 +1706,7 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
       </div>
       <div style="padding:12px 16px;display:flex;gap:8px">
         <button class="btn btn-primary" onclick="clearOrkin()">Clear All</button>
-        <div style="font-size:11px;color:var(--muted);padding:4px 0">Log entries are for internal tracking only</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">Internal log — no print or email needed</div>
       </div>
     </div>
 
@@ -1709,7 +1730,7 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
           <div style="font-size:11px;color:var(--dim);margin-top:2px">$299/night · Deposit $299 (refundable)</div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-blue" onclick="emailForm('gs')">✉ Email Reservation</button>
+          <button class="btn btn-ghost" <button class="btn btn-blue" onclick="emailForm('gs')">✉ Email Reservation</button>
           <button class="btn btn-primary" onclick="clearForm('gs')">Clear</button>
         </div>
       </div>
@@ -1915,6 +1936,60 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
   </div>
 </div>
 
+<!-- ══ GUEST KIOSK PAGE ══════════════════════════════════════════════════ -->
+<div class="page" id="page-kiosk">
+  <div class="panel" style="flex:1;overflow:hidden">
+    <div class="panel-head">
+      <div class="panel-title">🖥 Guest Kiosk</div>
+      <div class="panel-tools">
+        <span style="font-size:11px;color:var(--muted)">Visitor self-sign-in · submissions save to Supabase</span>
+      </div>
+    </div>
+    <div id="kiosk-root" style="height:calc(100vh - 180px);overflow-y:auto;background:var(--surface2)"></div>
+  </div>
+</div>
+
+<!-- ══ LIVE MONITOR PAGE ═════════════════════════════════════════════════ -->
+<div class="page" id="page-monitor">
+  <div class="panel" style="flex:1;overflow:hidden">
+    <div class="panel-head">
+      <div class="panel-title">📡 Live Sign-In Monitor</div>
+      <div class="panel-tools">
+        <div style="display:flex;align-items:center;gap:6px"><div class="kiosk-dot" id="monitor-live-dot"></div><span style="font-size:11px;color:var(--muted)">Polling Supabase every 2s</span></div>
+        <button class="btn btn-ghost btn-sm" onclick="monitorClear()">Clear</button>
+        <button class="btn btn-ghost btn-sm" id="monitor-hold-btn" onclick="monitorToggleHold()">Hold</button>
+      </div>
+    </div>
+    <div id="monitor-root" style="padding:20px 24px;height:calc(100vh - 180px);overflow-y:auto">
+      <div style="margin-bottom:16px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
+        <div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Current Visitor</div>
+          <div id="mon-name" style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,56px);font-weight:600;color:var(--text);line-height:1.05">Waiting…</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;padding-bottom:6px">
+          <div style="padding:12px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;min-width:100px">
+            <div class="dt">Reason</div><div id="mon-purpose" style="font-size:20px;font-weight:700;color:var(--text)">—</div>
+          </div>
+          <div style="padding:12px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;min-width:100px">
+            <div class="dt">Unit</div><div id="mon-unit" style="font-size:20px;font-weight:700;color:var(--gold)">—</div>
+          </div>
+          <div style="padding:12px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;min-width:100px">
+            <div class="dt">Company</div><div id="mon-company" style="font-size:20px;font-weight:700;color:var(--muted)">—</div>
+          </div>
+          <div style="padding:12px 16px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;min-width:110px">
+            <div class="dt">Vendor for</div><div id="mon-vendorUnit" style="font-size:20px;font-weight:700;color:var(--muted)">—</div>
+          </div>
+        </div>
+      </div>
+      <div id="mon-updated" style="font-size:11px;color:var(--dim);margin-bottom:20px">Polling…</div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Today's Kiosk Sign-Ins</div><div class="panel-count" id="mon-count">—</div></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Name</th><th>Unit</th><th>Purpose</th><th>Company</th></tr></thead><tbody id="mon-history"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /app-layout -->
@@ -2027,7 +2102,7 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
 <div class="embed-panel-overlay" id="embed-gmail">
   <div class="embed-panel" style="width:680px;height:auto">
     <div class="embed-panel-head">
-      <div class="embed-panel-title">✉ Gmail — Quick Launch</div>
+      <div class="embed-panel-title">✉ Email — Quick Launch</div>
       <button class="close-btn" onclick="closeOverlay('embed-gmail')" style="font-size:20px">✕</button>
     </div>
     <div style="padding:28px 32px;display:flex;flex-direction:column;gap:12px">
@@ -2119,9 +2194,16 @@ body.font-mono .btn{font-family:'Geist Mono',monospace}
         <div style="padding:9px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;flex-shrink:0">
           <div class="kiosk-dot"></div>
           <span style="font-size:12px;color:var(--muted)">Sign-In Monitor — Live</span>
-          <a href="https://script.google.com/macros/s/AKfycbwf10Q1DU8nAztpTCu5h9c4-LCWCMznoaVLpLHEgd6HV0AGiMOBY70GjkzbsXr7qwl98g/exec?view=monitor" target="_blank" class="btn btn-ghost btn-sm" style="margin-left:auto">↗ Full Screen</a>
+          <button onclick="goPage('monitor')" class="btn btn-ghost btn-sm" style="margin-left:auto">↗ Full View</button>
         </div>
-        <iframe style="flex:1;border:none;width:100%" src="https://script.google.com/macros/s/AKfycbwf10Q1DU8nAztpTCu5h9c4-LCWCMznoaVLpLHEgd6HV0AGiMOBY70GjkzbsXr7qwl98g/exec?view=monitor" sandbox="allow-scripts allow-same-origin allow-popups" loading="lazy"></iframe>
+        <div id="rlp-monitor-embed" style="flex:1;padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+          <div><div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:4px">Visitor</div><div id="rlp-dm-name" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--text)">Waiting…</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--line)"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px">Reason</div><div id="rlp-dm-purpose" style="font-size:16px;font-weight:600">—</div></div>
+            <div style="padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--line)"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px">Unit</div><div id="rlp-dm-unit" style="font-size:16px;font-weight:600;color:var(--gold)">—</div></div>
+            <div style="padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--line)"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px">Company</div><div id="rlp-dm-company" style="font-size:16px;font-weight:600;color:var(--muted)">—</div></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2358,17 +2440,8 @@ function toggleTheme() {
   }
 }
 
-const THEMES = {
-  dark:    {label:'Dark',    icon:'🌑'},
-  light:   {label:'Light',   icon:'☀'},
-  grey:    {label:'Grey',    icon:'🩶'},
-  midnight:{label:'Midnight',icon:'🌌'},
-  warm:    {label:'Warm',    icon:'🟤'},
-};
-
 function applyTheme(theme) {
-  document.body.className = document.body.className
-    .replace(/(dark|light|grey|midnight|warm)/g,'').trim();
+  document.body.classList.remove('dark','light','grey','midnight','warm');
   document.body.classList.add(theme || 'dark');
   const isLight = theme === 'light';
   const btn = document.getElementById('theme-btn');
@@ -2451,7 +2524,7 @@ function doLogout() {
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-password-u').value = '';
-  null.value = '';
+  const lu = document.getElementById('login-username'); if(lu) lu.value = '';
 }
 
 function bootApp() {
@@ -2484,7 +2557,8 @@ function bootApp() {
   loadDash();
   initAutoLogout();
   initAI();
-  loadPrefs();
+  loadPrefsFromStorage();
+  _startGlobalMonitorPoll(); // live kiosk monitor
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2515,7 +2589,7 @@ function renderOncall() {
 /* ═══════════════════════════════════════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════════════════════════════════════ */
-const PT = {dashboard:'Dashboard','visitor-log':'Visitor Log','sign-in':'Sign In Guest','plate-lookup':'Plate Lookup','email-tools':'Email Tools','shift-log':'Shift Pass Downs','luxer-audit':'Luxer Audit','cleaning-log':'Cleaning Logs','citations-log':'Log Citation',residents:'Resident Directory',vehicles:'Vehicle Registry',citations:'Citation Log',parking:'Parking Assignments','valet-map':'Valet Map',staff:'Staff & Contacts',vendors:'Vendors',codes:'Codes & Access',admin:'Admin Panel'};
+const PT = {dashboard:'Dashboard','visitor-log':'Visitor Log','sign-in':'Sign In Guest','plate-lookup':'Plate Lookup','email-tools':'Email Tools','shift-log':'Shift Pass Downs','luxer-audit':'Luxer Audit','cleaning-log':'Cleaning Logs','citations-log':'Log Citation',residents:'Resident Directory',vehicles:'Vehicle Registry',citations:'Citation Log',parking:'Parking Assignments','valet-map':'Valet Map',staff:'Staff & Contacts',vendors:'Vendors',codes:'Codes & Access',admin:'Admin Panel',kiosk:'Guest Kiosk',monitor:'Live Monitor'};
 
 // ── Navigation History ─────────────────────────────────────────────────────
 let navHistory = [], navPos = -1, navLock = false;
@@ -2539,7 +2613,8 @@ function goPage(page, addHistory=true) {
     residents:initRes,vehicles:initVeh,citations:initCit,
     parking:initPark,'valet-map':initValetMap,staff:loadStaff,vendors:loadVendors,
     codes:loadCodes,forms:initForms,'post-orders':initPostOrders,admin:loadAdmin,'shift-log':loadShiftHistory,
-    'luxer-audit':loadLuxerHistory,'cleaning-log':loadCL,'citations-log':loadNCRecent
+    'luxer-audit':loadLuxerHistory,'cleaning-log':loadCL,'citations-log':loadNCRecent,
+    kiosk:initKiosk,monitor:initMonitor
   };
   if(loaders[page]) loaders[page]();
 }
@@ -2714,8 +2789,11 @@ function renderDashWidgets() {
               </div>
             </div>
             <div class="dash-kiosk-wrap">
-              <div class="dash-kiosk-head"><div class="kiosk-dot"></div><span style="font-size:11px;color:var(--muted)">Live Monitor</span><a href="https://script.google.com/macros/s/AKfycbwf10Q1DU8nAztpTCu5h9c4-LCWCMznoaVLpLHEgd6HV0AGiMOBY70GjkzbsXr7qwl98g/exec?view=monitor" target="_blank" style="margin-left:auto;font-size:11px;color:var(--muted);text-decoration:none">↗ Full Screen</a></div>
-              <iframe class="dash-kiosk-iframe" src="https://script.google.com/macros/s/AKfycbwf10Q1DU8nAztpTCu5h9c4-LCWCMznoaVLpLHEgd6HV0AGiMOBY70GjkzbsXr7qwl98g/exec?view=monitor" sandbox="allow-scripts allow-same-origin allow-popups" loading="lazy"></iframe>
+              <div class="dash-kiosk-head"><div class="kiosk-dot" id="dm-dot"></div><span style="font-size:11px;color:var(--muted)">Live Monitor</span><button onclick="goPage('monitor')" style="margin-left:auto;font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer">↗ Full View</button></div>
+              <div id="dash-monitor-embed" style="flex:1;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:120px">
+                <div><div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:4px">Visitor</div><div id="dm-name" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--text)">Waiting…</div></div>
+                <div style="display:flex;gap:8px"><div style="font-size:12px;color:var(--muted)">Reason: <span id="dm-purpose" style="color:var(--text)">—</span></div><div style="font-size:12px;color:var(--muted)">Unit: <span id="dm-unit" style="color:var(--gold)">—</span></div></div>
+              </div>
             </div>
           </div>
         </div>`;
@@ -3529,74 +3607,24 @@ function renderPark(){
 ═══════════════════════════════════════════════════════════════════════════ */
 let staffData = [];
 
-async function loadStaff() {
-  const {data} = await api('staff_contacts', '?select=*&order=department.asc,name.asc', sessionToken);
-  if (!data) return;
-
-  // Group by department
-  const depts = {};
-  data.forEach(s => {
-    const d = s.department || 'Other';
-    if (!depts[d]) depts[d] = [];
-    depts[d].push(s);
-  });
-
-  const container = document.getElementById('staff-body');
-  if (!container) return;
-
-  // Build tabbed interface
-  const deptList = Object.keys(depts).sort();
-  container.innerHTML = `
-    <div style="border-bottom:1px solid var(--line);padding:0 16px;display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0" id="staff-tabs">
-      ${deptList.map((d,i) => `
-        <button onclick="showStaffTab('${d.replace(/'/g,"\'")}',this)"
-          style="padding:8px 14px;background:none;border:none;border-bottom:2px solid ${i===0?'var(--gold)':'transparent'};
-          color:${i===0?'var(--gold)':'var(--muted)'};cursor:pointer;font-family:'Outfit',sans-serif;
-          font-size:12px;font-weight:${i===0?'600':'400'};transition:all .15s;white-space:nowrap">
-          ${d} <span style="font-size:10px;opacity:.7">(${depts[d].length})</span>
-        </button>`).join('')}
-    </div>
-    <div id="staff-tab-content"></div>`;
-
-  // Store data globally for tab switching
-  window._staffDepts = depts;
-  // Show first tab
-  const firstTab = document.querySelector('#staff-tabs button');
-  if (firstTab) showStaffTab(deptList[0], firstTab);
-}
-
-function showStaffTab(dept, btn) {
-  // Update tab styles
-  document.querySelectorAll('#staff-tabs button').forEach(b => {
-    b.style.borderBottomColor = 'transparent';
-    b.style.color = 'var(--muted)';
-    b.style.fontWeight = '400';
-  });
-  if (btn) {
-    btn.style.borderBottomColor = 'var(--gold)';
-    btn.style.color = 'var(--gold)';
-    btn.style.fontWeight = '600';
-  }
-
-  const members = window._staffDepts[dept] || [];
-  const content = document.getElementById('staff-tab-content');
-  if (!content) return;
-
-  content.innerHTML = `<div class="tbl-wrap"><table>
-    <thead><tr><th>Name</th><th>Title</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
-    <tbody>
-      ${members.map(s => `<tr>
-        <td class="td-bold">${esc(s.name)}</td>
-        <td class="td-dim">${esc(s.title||'—')}</td>
-        <td class="td-mono td-sm">${esc(s.phone||'—')}</td>
-        <td class="td-dim td-sm">${esc(s.email||'—')}</td>
-        <td style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="editStaff('${s.id}')">Edit</button>
-          <button class="btn btn-red btn-sm" onclick="deleteStaff('${s.id}','${esc(s.name)}')">Delete</button>
-        </td>
-      </tr>`).join('')}
-    </tbody>
-  </table></div>`;
+async function loadStaff(){
+  const{data}=await api('staff_contacts','?select=*&order=department.asc,name.asc',sessionToken);
+  staffData = data;
+  const dC=dept=>{if(!dept)return'';if(dept==='Securitas')return`<span class="chip chip-blue">Securitas</span>`;if(dept==='Maintenance')return`<span class="chip chip-amber">Maintenance</span>`;if(dept.includes('Cushman'))return`<span class="chip chip-gold">Management</span>`;if(dept==='CPW')return`<span class="chip chip-green">CPW</span>`;if(dept==='Valet')return`<span class="chip chip-purple">Valet</span>`;if(dept==='Porters')return`<span class="chip chip-gray">Porters</span>`;return`<span class="chip chip-gray">${esc(dept)}</span>`;};
+  const roleLevel={staff:1,supervisor:2,manager:3,admin:4};
+  const canEdit=roleLevel[currentProfile?.role]>=2;
+  document.getElementById('staff-body').innerHTML=data.length?data.map((s,i)=>`
+    <tr>
+      <td class="td-bold">${esc(s.name)}</td>
+      <td class="td-dim">${esc(s.role)}</td>
+      <td>${dC(s.department)}</td>
+      <td class="td-mono td-gold">${esc(s.phone)}</td>
+      <td class="td-dim td-sm">${esc(s.email)}</td>
+      <td class="td-dim td-sm td-wrap">${esc(s.notes)}</td>
+      <td>${canEdit?`<div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="editStaffContact(${i})">✎</button><button class="btn btn-red btn-sm" onclick="deleteStaffContact('${s.id}','${esc(s.name)}')">✕</button></div>`:''}</td>
+    </tr>`).join(''):emptyRow(7);
+  // Inject department tabs above table
+  renderStaffTabbed(data);
 }
 
 function openAddStaffContact(){
@@ -3686,73 +3714,11 @@ async function deleteStaffContact(id,name){
     }
   },'Remove');
 }
-async function loadVendors() {
-  const {data} = await api('vendors', '?select=*&order=category.asc,name.asc', sessionToken);
-  if (!data) return;
+async function loadVendors(){
+  const{data}=await api('vendors','?select=*&order=service_type.asc,company_name.asc',sessionToken);
+  document.getElementById('vendor-body').innerHTML=data.length?data.map(v=>`<tr><td class="td-bold">${esc(v.company_name)}</td><td class="td-dim">${esc(v.contact_name)}</td><td class="td-mono td-gold">${esc(v.phone)}</td><td class="td-dim td-sm">${esc(v.email)}</td><td><span class="chip chip-gray" style="font-size:10px">${esc(v.service_type)}</span></td><td class="td-dim td-sm td-wrap">${esc(v.notes)}</td></tr>`).join(''):emptyRow(6);
+  renderVendorTabbed(data);
 
-  const VENDOR_CATEGORIES = [
-    'HVAC & Air Conditioning','Plumbing','Electrical','Pest Control',
-    'Landscaping','Cleaning','Elevator','Parking & Gates',
-    'Security','Internet & Cable','General Maintenance','Other'
-  ];
-
-  // Group by category
-  const cats = {};
-  data.forEach(v => {
-    const c = v.category || 'Other';
-    if (!cats[c]) cats[c] = [];
-    cats[c].push(v);
-  });
-
-  const container = document.getElementById('vendor-body');
-  if (!container) return;
-
-  const catList = Object.keys(cats).sort();
-  container.innerHTML = `
-    <div style="border-bottom:1px solid var(--line);padding:0 16px;display:flex;gap:4px;flex-wrap:wrap" id="vendor-tabs">
-      ${catList.map((c,i) => `
-        <button onclick="showVendorTab('${c.replace(/'/g,"\'")}',this)"
-          style="padding:8px 14px;background:none;border:none;border-bottom:2px solid ${i===0?'var(--gold)':'transparent'};
-          color:${i===0?'var(--gold)':'var(--muted)'};cursor:pointer;font-family:'Outfit',sans-serif;
-          font-size:12px;font-weight:${i===0?'600':'400'};transition:all .15s;white-space:nowrap">
-          ${c} <span style="font-size:10px;opacity:.7">(${cats[c].length})</span>
-        </button>`).join('')}
-    </div>
-    <div id="vendor-tab-content"></div>`;
-
-  window._vendorCats = cats;
-  const firstTab = document.querySelector('#vendor-tabs button');
-  if (firstTab) showVendorTab(catList[0], firstTab);
-}
-
-function showVendorTab(cat, btn) {
-  document.querySelectorAll('#vendor-tabs button').forEach(b => {
-    b.style.borderBottomColor = 'transparent';
-    b.style.color = 'var(--muted)';
-    b.style.fontWeight = '400';
-  });
-  if (btn) {
-    btn.style.borderBottomColor = 'var(--gold)';
-    btn.style.color = 'var(--gold)';
-    btn.style.fontWeight = '600';
-  }
-
-  const vendors = window._vendorCats[cat] || [];
-  const content = document.getElementById('vendor-tab-content');
-  if (!content) return;
-
-  content.innerHTML = `<div class="tbl-wrap"><table>
-    <thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Notes</th></tr></thead>
-    <tbody>
-      ${vendors.map(v => `<tr>
-        <td class="td-bold">${esc(v.name)}</td>
-        <td class="td-dim">${esc(v.contact_name||'—')}</td>
-        <td class="td-mono td-sm">${esc(v.phone||'—')}</td>
-        <td class="td-dim td-sm">${esc(v.email||'—')}</td>
-        <td class="td-dim td-sm">${esc(v.notes||'')}</td>
-      </tr>`).join('')}
-    </tbody>
-  </table></div>`;
 }
 async function loadCodes(){
   const{data}=await api('luxer_codes','?select=*&order=carrier_name.asc',sessionToken);
@@ -3771,12 +3737,12 @@ async function loadAdmin(){
   const{data:users}=await api('user_profiles','?select=*&order=created_at.asc',sessionToken);
   const{data:auditData,total}=await api('audit_log','?select=*&order=created_at.desc&limit=50',sessionToken);
 
-  if(!users){ 
+  if(!users){
     document.getElementById('admin-users').innerHTML = emptyRow(6,'Could not load users — session may have expired. Please sign out and back in.');
     return;
   }
 
-  document.getElementById('admin-users').innerHTML = users.length ? users.map(u=>`
+  document.getElementById('admin-users').innerHTML = users.length ? users.map((u,i)=>`
     <tr>
       <td class="td-bold">${esc(u.full_name)}</td>
       <td class="td-mono td-dim">${esc(u.username||'—')}</td>
@@ -3805,6 +3771,7 @@ async function loadAdmin(){
       <td class="td-dim td-sm td-wrap">${esc(JSON.stringify(a.details||{}))}</td>
     </tr>`).join('') : emptyRow(5,'No audit entries yet.');
 }
+
 function openAddUser(){document.getElementById('add-user-modal').classList.add('open');}
 function toggleUserFields(){
   const role=document.getElementById('au-role')?.value;
@@ -4680,52 +4647,6 @@ function clearOrkin() {
   addOrkinRow();
 }
 
-/* ── FORM ACTIONS ─────────────────────────────────────────────────────── */
-const FORM_EMAIL_TEMPLATES = {
-  'inq': {
-    subject: 'Astoria CPW — Leasing Inquiry',
-    to: 'leasing@astoriaapts.com',
-    label: 'Email to Leasing'
-  },
-  'kr': {
-    subject: 'Astoria CPW — Key Return Form',
-    to: 'management@astoriaapts.com',
-    label: 'Email to Management'
-  },
-  'gs': {
-    subject: 'Astoria CPW — Guest Suite Reservation',
-    to: 'management@astoriaapts.com',
-    label: 'Email Reservation'
-  },
-  'cr': {
-    subject: 'Astoria CPW — Club Room / Terrace Rental',
-    to: 'management@astoriaapts.com',
-    label: 'Email Agreement'
-  },
-};
-
-function emailForm(formId) {
-  const tpl = FORM_EMAIL_TEMPLATES[formId];
-  if (!tpl) return;
-
-  // Gather form data
-  const fields = {};
-  document.querySelectorAll(`[id^="${formId}-"]`).forEach(el => {
-    const key = el.id.replace(formId + '-', '');
-    if (el.type === 'radio') { if (el.checked) fields[key] = el.value; }
-    else fields[key] = el.value || '';
-  });
-
-  // Build email body
-  const body = Object.entries(fields)
-    .filter(([k,v]) => v)
-    .map(([k,v]) => `${k.toUpperCase()}: ${v}`)
-    .join('\n');
-
-  const mailtoLink = `mailto:${tpl.to}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(body + '\n\n— Submitted via Astoria Concierge Portal')}`;
-  window.open(mailtoLink, '_blank');
-}
-
 function printForm(formId) {
   // Build a clean printable version
   const formData = {};
@@ -4760,67 +4681,38 @@ function printForm(formId) {
   <div class="modal" style="width:500px">
     <div class="modal-head">
       <div class="modal-title">⚙ Preferences</div>
-      <button class="close-btn" onclick="closePrefsPanel()">✕</button>
+      <button class="close-btn" onclick="document.getElementById('prefs-overlay').classList.remove('open')">✕</button>
     </div>
-    <div class="modal-body" style="display:flex;flex-direction:column;gap:20px">
-
-      <!-- Color Theme -->
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:22px">
       <div>
         <div class="dt" style="margin-bottom:10px">Color Theme</div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px" id="theme-grid">
-          <button onclick="selectTheme('dark')" class="theme-opt" data-theme="dark" style="padding:10px 6px;border-radius:8px;border:2px solid transparent;background:#141210;cursor:pointer;font-size:11px;color:#F2EDE4;display:flex;flex-direction:column;align-items:center;gap:4px">
-            <span style="font-size:18px">🌑</span>Dark
-          </button>
-          <button onclick="selectTheme('light')" class="theme-opt" data-theme="light" style="padding:10px 6px;border-radius:8px;border:2px solid transparent;background:#F5F4F0;cursor:pointer;font-size:11px;color:#1a1814;display:flex;flex-direction:column;align-items:center;gap:4px">
-            <span style="font-size:18px">☀</span>Light
-          </button>
-          <button onclick="selectTheme('grey')" class="theme-opt" data-theme="grey" style="padding:10px 6px;border-radius:8px;border:2px solid transparent;background:#242426;cursor:pointer;font-size:11px;color:#E8E8EA;display:flex;flex-direction:column;align-items:center;gap:4px">
-            <span style="font-size:18px">🩶</span>Grey
-          </button>
-          <button onclick="selectTheme('midnight')" class="theme-opt" data-theme="midnight" style="padding:10px 6px;border-radius:8px;border:2px solid transparent;background:#0A0A1A;cursor:pointer;font-size:11px;color:#E8EAFF;display:flex;flex-direction:column;align-items:center;gap:4px">
-            <span style="font-size:18px">🌌</span>Midnight
-          </button>
-          <button onclick="selectTheme('warm')" class="theme-opt" data-theme="warm" style="padding:10px 6px;border-radius:8px;border:2px solid transparent;background:#211A14;cursor:pointer;font-size:11px;color:#F5EDE0;display:flex;flex-direction:column;align-items:center;gap:4px">
-            <span style="font-size:18px">🟤</span>Warm
-          </button>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+          <button onclick="selectTheme('dark',this)" class="theme-opt" data-theme="dark" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#141210;cursor:pointer;font-size:11px;color:#F2EDE4;display:flex;flex-direction:column;align-items:center;gap:4px">🌑<span>Dark</span></button>
+          <button onclick="selectTheme('light',this)" class="theme-opt" data-theme="light" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#F5F4F0;cursor:pointer;font-size:11px;color:#1a1814;display:flex;flex-direction:column;align-items:center;gap:4px">☀<span>Light</span></button>
+          <button onclick="selectTheme('grey',this)" class="theme-opt" data-theme="grey" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#242426;cursor:pointer;font-size:11px;color:#E8E8EA;display:flex;flex-direction:column;align-items:center;gap:4px">🩶<span>Grey</span></button>
+          <button onclick="selectTheme('midnight',this)" class="theme-opt" data-theme="midnight" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#0A0A1A;cursor:pointer;font-size:11px;color:#E8EAFF;display:flex;flex-direction:column;align-items:center;gap:4px">🌌<span>Midnight</span></button>
+          <button onclick="selectTheme('warm',this)" class="theme-opt" data-theme="warm" style="padding:10px 4px;border-radius:8px;border:2px solid transparent;background:#211A14;cursor:pointer;font-size:11px;color:#F5EDE0;display:flex;flex-direction:column;align-items:center;gap:4px">🟤<span>Warm</span></button>
         </div>
       </div>
-
-      <!-- Font Style -->
       <div>
         <div class="dt" style="margin-bottom:10px">Font Style</div>
         <div style="display:flex;gap:8px">
-          <button onclick="selectFont('sans')" class="font-opt" data-font="sans" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Outfit',sans-serif">
-            Aa Sans
-          </button>
-          <button onclick="selectFont('serif')" class="font-opt" data-font="serif" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Cormorant Garamond',serif">
-            Aa Serif
-          </button>
-          <button onclick="selectFont('mono')" class="font-opt" data-font="mono" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Geist Mono',monospace">
-            Aa Mono
-          </button>
+          <button onclick="selectFont('sans',this)" class="font-opt" data-font="sans" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Outfit',sans-serif">Aa Sans</button>
+          <button onclick="selectFont('serif',this)" class="font-opt" data-font="serif" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Cormorant Garamond',serif">Aa Serif</button>
+          <button onclick="selectFont('mono',this)" class="font-opt" data-font="mono" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text);font-family:'Geist Mono',monospace">Aa Mono</button>
         </div>
       </div>
-
-      <!-- Font Size -->
       <div>
         <div class="dt" style="margin-bottom:10px">Font Size</div>
         <div style="display:flex;gap:8px">
-          <button onclick="selectFontSize('compact')" class="size-opt" data-size="compact" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:11px;color:var(--muted)">
-            Compact
-          </button>
-          <button onclick="selectFontSize('normal')" class="size-opt" data-size="normal" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text)">
-            Normal
-          </button>
-          <button onclick="selectFontSize('large')" class="size-opt" data-size="large" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:15px;color:var(--text);font-weight:500">
-            Large
-          </button>
+          <button onclick="selectFontSize('compact',this)" class="size-opt" data-size="compact" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:11px;color:var(--muted)">Compact</button>
+          <button onclick="selectFontSize('normal',this)" class="size-opt" data-size="normal" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text)">Normal</button>
+          <button onclick="selectFontSize('large',this)" class="size-opt" data-size="large" style="flex:1;padding:10px;border-radius:8px;border:2px solid transparent;background:var(--surface2);cursor:pointer;font-size:15px;color:var(--text);font-weight:500">Large</button>
         </div>
       </div>
-
     </div>
     <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="resetPrefs()">Reset to Defaults</button>
+      <button class="btn btn-ghost" onclick="resetPrefs()">Reset</button>
       <button class="btn btn-primary" onclick="savePrefs()">Save Preferences</button>
     </div>
   </div>
@@ -5621,87 +5513,191 @@ async function gloSearch(query) {
 }
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   PREFERENCES
-═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   PREFERENCES SYSTEM
+═══════════════════════════════════════════════════════════════════════ */
 let currentPrefs = {theme:'dark', font:'sans', size:'normal'};
 
 function openPrefsPanel() {
-  loadPrefs();
+  loadPrefsFromStorage();
   highlightActivePrefs();
   document.getElementById('prefs-overlay').classList.add('open');
 }
-function closePrefsPanel() {
-  document.getElementById('prefs-overlay').classList.remove('open');
+
+function loadPrefsFromStorage() {
+  const key = 'astoria_prefs_' + (currentProfile?.id || 'default');
+  const saved = localStorage.getItem(key);
+  if (saved) { try { currentPrefs = {...currentPrefs, ...JSON.parse(saved)}; } catch(e) {} }
+  applyAllPrefs();
 }
 
-function loadPrefs() {
-  const saved = localStorage.getItem('astoria_prefs_' + (currentProfile?.id || 'default'));
-  if (saved) {
-    try { currentPrefs = {...currentPrefs, ...JSON.parse(saved)}; } catch(e) {}
-  }
-  applyPrefs();
-}
-
-function applyPrefs() {
+function applyAllPrefs() {
   applyTheme(currentPrefs.theme);
-  // Font style
   document.body.classList.remove('font-sans','font-serif','font-mono');
-  document.body.classList.add('font-' + (currentPrefs.font||'sans'));
-  // Font size
+  if (currentPrefs.font !== 'sans') document.body.classList.add('font-' + currentPrefs.font);
   document.body.classList.remove('font-compact','font-normal','font-large');
-  document.body.classList.add('font-' + (currentPrefs.size||'normal'));
-  // Update topbar button label
+  if (currentPrefs.size !== 'normal') document.body.classList.add('font-' + currentPrefs.size);
+  const icons = {dark:'🌑',light:'☀',grey:'🩶',midnight:'🌌',warm:'🟤'};
   const btn = document.getElementById('theme-btn');
-  if (btn) {
-    const icons = {dark:'🌑',light:'☀',grey:'🩶',midnight:'🌌',warm:'🟤'};
-    btn.innerHTML = `${icons[currentPrefs.theme]||'🌑'} Theme`;
-  }
+  if (btn) btn.innerHTML = (icons[currentPrefs.theme]||'🌑') + ' Theme';
 }
 
 function highlightActivePrefs() {
-  document.querySelectorAll('.theme-opt').forEach(b => {
-    b.style.border = b.dataset.theme === currentPrefs.theme
-      ? '2px solid var(--gold)' : '2px solid transparent';
-  });
-  document.querySelectorAll('.font-opt').forEach(b => {
-    b.style.border = b.dataset.font === currentPrefs.font
-      ? '2px solid var(--gold)' : '2px solid transparent';
-  });
-  document.querySelectorAll('.size-opt').forEach(b => {
-    b.style.border = b.dataset.size === currentPrefs.size
-      ? '2px solid var(--gold)' : '2px solid transparent';
-  });
+  document.querySelectorAll('.theme-opt').forEach(b =>
+    b.style.border = b.dataset.theme === currentPrefs.theme ? '2px solid var(--gold)' : '2px solid transparent');
+  document.querySelectorAll('.font-opt').forEach(b =>
+    b.style.border = b.dataset.font === currentPrefs.font ? '2px solid var(--gold)' : '2px solid transparent');
+  document.querySelectorAll('.size-opt').forEach(b =>
+    b.style.border = b.dataset.size === currentPrefs.size ? '2px solid var(--gold)' : '2px solid transparent');
 }
 
-function selectTheme(t) { currentPrefs.theme = t; applyPrefs(); highlightActivePrefs(); }
-function selectFont(f)  { currentPrefs.font  = f; applyPrefs(); highlightActivePrefs(); }
-function selectFontSize(s){ currentPrefs.size = s; applyPrefs(); highlightActivePrefs(); }
+function selectTheme(t) { currentPrefs.theme = t; applyAllPrefs(); highlightActivePrefs(); }
+function selectFont(f)   { currentPrefs.font  = f; applyAllPrefs(); highlightActivePrefs(); }
+function selectFontSize(s){ currentPrefs.size  = s; applyAllPrefs(); highlightActivePrefs(); }
 
 function savePrefs() {
-  localStorage.setItem('astoria_prefs_' + (currentProfile?.id || 'default'), JSON.stringify(currentPrefs));
-  closePrefsPanel();
-  showToast('Preferences saved');
+  const key = 'astoria_prefs_' + (currentProfile?.id || 'default');
+  localStorage.setItem(key, JSON.stringify(currentPrefs));
+  document.getElementById('prefs-overlay').classList.remove('open');
+  showToast('✓ Preferences saved');
 }
 
 function resetPrefs() {
   currentPrefs = {theme:'dark', font:'sans', size:'normal'};
-  applyPrefs();
+  applyAllPrefs();
   highlightActivePrefs();
 }
 
 function showToast(msg) {
-  let t = document.getElementById('toast');
+  let t = document.getElementById('app-toast');
   if (!t) {
     t = document.createElement('div');
-    t.id = 'toast';
-    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--gold-bd);border-radius:8px;padding:10px 20px;font-size:12.5px;color:var(--text);z-index:400;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:opacity .3s';
+    t.id = 'app-toast';
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);border:1px solid var(--gold-bd);border-radius:8px;padding:10px 20px;font-size:12.5px;color:var(--text);z-index:400;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:all .3s;opacity:0';
     document.body.appendChild(t);
   }
   t.textContent = msg;
   t.style.opacity = '1';
-  setTimeout(() => t.style.opacity = '0', 2000);
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(10px)'; }, 2500);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STAFF DIRECTORY — TABBED BY DEPARTMENT
+═══════════════════════════════════════════════════════════════════════ */
+function renderStaffTabbed(data) {
+  const depts = {};
+  (data||[]).forEach(s => {
+    const d = s.department || 'Other';
+    if (!depts[d]) depts[d] = [];
+    depts[d].push(s);
+  });
+  window._staffDepts = depts;
+  const deptList = Object.keys(depts).sort();
+  const container = document.getElementById('staff-table-wrap');
+  if (!container) return;
+  container.innerHTML = `
+    <div style="border-bottom:1px solid var(--line);padding:0 16px;display:flex;gap:2px;flex-wrap:wrap" id="staff-tabs">
+      ${deptList.map((d,i) => `<button onclick="showStaffTab('${d.replace(/'/g,"\'").replace(/"/g,'&quot;')}',this)"
+        style="padding:8px 14px;background:none;border:none;border-bottom:2px solid ${i===0?'var(--gold)':'transparent'};
+        color:${i===0?'var(--gold)':'var(--muted)'};cursor:pointer;font-family:'Outfit',sans-serif;
+        font-size:12px;font-weight:${i===0?600:400};transition:all .15s;white-space:nowrap">${d}
+        <span style="font-size:10px;opacity:.6">(${depts[d].length})</span></button>`).join('')}
+    </div>
+    <div id="staff-dept-content"></div>`;
+  if (deptList.length) showStaffTab(deptList[0], document.querySelector('#staff-tabs button'));
+}
+
+function showStaffTab(dept, btn) {
+  document.querySelectorAll('#staff-tabs button').forEach(b => {
+    b.style.borderBottomColor = 'transparent'; b.style.color = 'var(--muted)'; b.style.fontWeight = 400;
+  });
+  if (btn) { btn.style.borderBottomColor = 'var(--gold)'; btn.style.color = 'var(--gold)'; btn.style.fontWeight = 600; }
+  const members = (window._staffDepts||{})[dept] || [];
+  const el = document.getElementById('staff-dept-content');
+  if (!el) return;
+  const canEdit = (roleLevel => roleLevel[currentProfile?.role]>=2)({staff:1,supervisor:2,manager:3,admin:4});
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Name</th><th>Title</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
+    <tbody>${members.map(s=>`<tr>
+      <td class="td-bold">${esc(s.name)}</td>
+      <td class="td-dim">${esc(s.title||'—')}</td>
+      <td class="td-mono td-sm">${esc(s.phone||'—')}</td>
+      <td class="td-dim td-sm">${esc(s.email||'—')}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="editStaffContact('${s.id}')">Edit</button>
+          <button class="btn btn-red btn-sm" onclick="deleteStaffContact('${s.id}','${esc(s.name)}')">Delete</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VENDOR DIRECTORY — TABBED BY CATEGORY
+═══════════════════════════════════════════════════════════════════════ */
+function renderVendorTabbed(data) {
+  const cats = {};
+  (data||[]).forEach(v => {
+    const c = v.category || 'General';
+    if (!cats[c]) cats[c] = [];
+    cats[c].push(v);
+  });
+  window._vendorCats = cats;
+  const catList = Object.keys(cats).sort();
+  const container = document.getElementById('vendor-table-wrap');
+  if (!container) return;
+  container.innerHTML = `
+    <div style="border-bottom:1px solid var(--line);padding:0 16px;display:flex;gap:2px;flex-wrap:wrap" id="vendor-tabs">
+      ${catList.map((c,i) => `<button onclick="showVendorTab('${c.replace(/'/g,"\'").replace(/"/g,'&quot;')}',this)"
+        style="padding:8px 14px;background:none;border:none;border-bottom:2px solid ${i===0?'var(--gold)':'transparent'};
+        color:${i===0?'var(--gold)':'var(--muted)'};cursor:pointer;font-family:'Outfit',sans-serif;
+        font-size:12px;font-weight:${i===0?600:400};transition:all .15s;white-space:nowrap">${c}
+        <span style="font-size:10px;opacity:.6">(${cats[c].length})</span></button>`).join('')}
+    </div>
+    <div id="vendor-cat-content"></div>`;
+  if (catList.length) showVendorTab(catList[0], document.querySelector('#vendor-tabs button'));
+}
+
+function showVendorTab(cat, btn) {
+  document.querySelectorAll('#vendor-tabs button').forEach(b => {
+    b.style.borderBottomColor = 'transparent'; b.style.color = 'var(--muted)'; b.style.fontWeight = 400;
+  });
+  if (btn) { btn.style.borderBottomColor = 'var(--gold)'; btn.style.color = 'var(--gold)'; btn.style.fontWeight = 600; }
+  const vendors = (window._vendorCats||{})[cat] || [];
+  const el = document.getElementById('vendor-cat-content');
+  if (!el) return;
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Notes</th></tr></thead>
+    <tbody>${vendors.map(v=>`<tr>
+      <td class="td-bold">${esc(v.name||v.company||'')}</td>
+      <td class="td-dim">${esc(v.contact_name||v.contact||'—')}</td>
+      <td class="td-mono td-sm">${esc(v.phone||'—')}</td>
+      <td class="td-dim td-sm">${esc(v.email||'—')}</td>
+      <td class="td-dim td-sm">${esc(v.notes||'')}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FORM EMAIL INTEGRATION
+═══════════════════════════════════════════════════════════════════════ */
+const FORM_EMAIL_TEMPLATES = {
+  inq:{ to:'leasing@astoriaapts.com', subject:'Astoria CPW — Leasing Inquiry' },
+  kr: { to:'management@astoriaapts.com', subject:'Astoria CPW — Key Return Form' },
+  gs: { to:'management@astoriaapts.com', subject:'Astoria CPW — Guest Suite Reservation' },
+  cr: { to:'management@astoriaapts.com', subject:'Astoria CPW — Club Room / Terrace Rental Agreement' },
+};
+
+function emailForm(formId) {
+  const tpl = FORM_EMAIL_TEMPLATES[formId];
+  if (!tpl) return;
+  const fields = {};
+  document.querySelectorAll('[id^="' + formId + '-"]').forEach(el => {
+    const key = el.id.replace(formId + '-', '');
+    if (el.type === 'radio') { if (el.checked) fields[key] = el.value; }
+    else fields[key] = el.value || '';
+  });
+  const body = Object.entries(fields).filter(([k,v])=>v)
+    .map(([k,v]) => k.toUpperCase().replace(/-/g,' ') + ': ' + v).join('\n');
+  window.open(`mailto:${tpl.to}?subject=${encodeURIComponent(tpl.subject)}&body=${encodeURIComponent(body + '\n\n— Submitted via Astoria Concierge Portal')}`, '_blank');
+}
+
 // Restore theme first (before session check) to prevent flash
 const savedTheme = localStorage.getItem('astoria_theme') || 'dark';
 applyTheme(savedTheme);
@@ -5725,6 +5721,465 @@ document.getElementById('login-username')?.addEventListener('keydown',e=>{if(e.k
     document.getElementById('login-screen').style.display='flex';
   }
 })();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KIOSK_LIVE TABLE HELPERS (Supabase — single-row state table)
+   Row is always id=1 in kiosk_live: {id, data jsonb, updated_at}
+   SQL to create (run once in Supabase SQL editor):
+     create table if not exists kiosk_live (
+       id int primary key default 1,
+       data jsonb default '{}',
+       updated_at timestamptz default now()
+     );
+     insert into kiosk_live (id, data) values (1, '{}') on conflict do nothing;
+     alter table kiosk_live enable row level security;
+     create policy "allow all authed" on kiosk_live for all using (auth.role()='authenticated');
+═══════════════════════════════════════════════════════════════════════════ */
+async function kioskLiveGet() {
+  const r = await fetch(`${SB}/rest/v1/kiosk_live?id=eq.1&select=data`, {
+    headers:{'apikey':KEY,'Authorization':'Bearer '+(sessionToken||KEY)}
+  });
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return rows?.[0]?.data || null;
+}
+
+async function kioskLiveSet(data) {
+  await fetch(`${SB}/rest/v1/kiosk_live?id=eq.1`, {
+    method:'PATCH',
+    headers:{'apikey':KEY,'Authorization':'Bearer '+(sessionToken||KEY),'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({data, updated_at: new Date().toISOString()})
+  });
+}
+
+async function kioskLiveClear() {
+  await kioskLiveSet({});
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIVE MONITOR POLL — updates all embedded monitor widgets in real-time
+═══════════════════════════════════════════════════════════════════════════ */
+let _monitorPollTimer = null;
+let _monitorHeld = false;
+let _monitorLast = '{}';
+
+function _renderMonitorData(d) {
+  const v = d || {};
+  const name = v.name || '';
+  const purpose = v.purpose || '—';
+  const unit = v.unit || '—';
+  const company = v.company || '—';
+  const vendorUnit = v.vendorUnit || '—';
+  const ts = v._ts ? new Date(v._ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+
+  // Full monitor page
+  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setEl('mon-name', name || 'Waiting…');
+  setEl('mon-purpose', purpose);
+  setEl('mon-unit', unit);
+  setEl('mon-company', company);
+  setEl('mon-vendorUnit', vendorUnit);
+  const upd = document.getElementById('mon-updated');
+  if(upd) upd.textContent = ts ? `Last entry: ${ts}` : 'Polling…';
+
+  // Sign-in page embedded monitor
+  setEl('sim-name', name || 'Waiting…');
+  setEl('sim-purpose', purpose);
+  setEl('sim-unit', unit);
+  setEl('sim-company', company);
+  const simUpd = document.getElementById('sim-updated');
+  if(simUpd) simUpd.textContent = ts ? `Last: ${ts}` : 'Polling…';
+
+  // Dashboard widget embedded monitor
+  setEl('dm-name', name || 'Waiting…');
+  setEl('dm-purpose', purpose);
+  setEl('dm-unit', unit);
+
+  // RLP panel embedded monitor
+  setEl('rlp-dm-name', name || 'Waiting…');
+  setEl('rlp-dm-purpose', purpose);
+  setEl('rlp-dm-unit', unit);
+  setEl('rlp-dm-company', company);
+}
+
+async function _monitorPoll() {
+  try {
+    const data = await kioskLiveGet();
+    const json = JSON.stringify(data || {});
+    const changed = json !== _monitorLast;
+    _monitorLast = json;
+
+    if (!_monitorHeld && changed && data && data.name) {
+      _renderMonitorData(data);
+    } else if (!_monitorHeld && !data?.name) {
+      _renderMonitorData({});
+    }
+  } catch(e) {}
+  _monitorPollTimer = setTimeout(_monitorPoll, 2000);
+}
+
+function startMonitorPoll() {
+  if (_monitorPollTimer) return;
+  _monitorPoll();
+}
+
+function monitorToggleHold() {
+  _monitorHeld = !_monitorHeld;
+  const btn = document.getElementById('monitor-hold-btn');
+  if(btn) { btn.textContent = _monitorHeld ? 'Resume' : 'Hold'; btn.style.background = _monitorHeld ? 'var(--gold-bg)' : ''; }
+}
+
+async function monitorClear() {
+  await kioskLiveClear();
+  _monitorHeld = false;
+  const btn = document.getElementById('monitor-hold-btn');
+  if(btn) { btn.textContent = 'Hold'; btn.style.background = ''; }
+  _renderMonitorData({});
+  _monitorLast = '{}';
+  loadMonitorHistory();
+}
+
+async function loadMonitorHistory() {
+  const today = new Date().toISOString().split('T')[0];
+  const {data} = await api('visitors', `?select=*&sign_in_time=gte.${today}T00:00:00&notes=ilike.*kiosk*&order=sign_in_time.desc&limit=50`, sessionToken);
+  const tbody = document.getElementById('mon-history');
+  const cnt = document.getElementById('mon-count');
+  if (!tbody) return;
+  if (!data || !data.length) {
+    // fallback: show all today
+    const {data:all} = await api('visitors', `?select=*&sign_in_time=gte.${today}T00:00:00&order=sign_in_time.desc&limit=50`, sessionToken);
+    if(cnt) cnt.textContent = all?.length || 0;
+    tbody.innerHTML = all?.length ? all.map(v=>`
+      <tr><td class="td-mono td-dim td-sm">${fT(v.sign_in_time)}</td>
+      <td class="td-bold">${esc(v.visitor_name)}</td>
+      <td class="td-mono td-dim">${esc(v.unit_number||'—')}</td>
+      <td>${purposeChip(v.purpose)}</td>
+      <td class="td-dim td-sm">${esc(v.notes||'—')}</td></tr>`).join('') : emptyRow(5,'No kiosk sign-ins today');
+    return;
+  }
+  if(cnt) cnt.textContent = data.length;
+  tbody.innerHTML = data.map(v=>`
+    <tr><td class="td-mono td-dim td-sm">${fT(v.sign_in_time)}</td>
+    <td class="td-bold">${esc(v.visitor_name)}</td>
+    <td class="td-mono td-dim">${esc(v.unit_number||'—')}</td>
+    <td>${purposeChip(v.purpose)}</td>
+    <td class="td-dim td-sm">${esc(v.notes||'—')}</td></tr>`).join('');
+}
+
+function initMonitor() {
+  startMonitorPoll();
+  loadMonitorHistory();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KIOSK PAGE — self-contained sign-in form rendered inside #kiosk-root
+   Replaces all google.script.run calls with direct Supabase API calls
+═══════════════════════════════════════════════════════════════════════════ */
+let _kioskInited = false;
+
+function initKiosk() {
+  if (_kioskInited) return;
+  _kioskInited = true;
+  startMonitorPoll(); // also starts poll for monitor embeds
+  renderKioskForm();
+}
+
+function renderKioskForm() {
+  const root = document.getElementById('kiosk-root');
+  if (!root) return;
+
+  root.innerHTML = `
+    <style>
+      #kiosk-wrap{font-family:'Outfit',sans-serif;color:var(--text);padding:28px;max-width:680px;margin:0 auto}
+      #kiosk-wrap h1{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;margin:0 0 4px;color:var(--text)}
+      #kiosk-wrap .ksub{font-size:16px;color:var(--muted);margin-bottom:24px;font-weight:500}
+      .kpill-group{display:grid;gap:10px}
+      .kpill-group.col3{grid-template-columns:repeat(3,1fr)}
+      .kpill-group.col2{grid-template-columns:repeat(2,1fr)}
+      .kpill{min-height:68px;border-radius:14px;border:1px solid var(--line2);background:var(--surface2);color:var(--text);font-size:17px;font-weight:700;cursor:pointer;transition:all .15s;padding:12px}
+      .kpill:hover{background:var(--surface3);border-color:var(--line2)}
+      .kpill.on{background:var(--gold-bg);border-color:var(--gold-bd);color:var(--gold2)}
+      .kfield{margin-top:18px}
+      .kfield label{display:block;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+      .kinput{width:100%;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:14px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:18px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+      .kinput:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169,106,.1)}
+      .kinput::placeholder{color:var(--dim)}
+      .ksection{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+      .ktower-note{font-size:11px;color:var(--dim);margin:6px 0 10px 2px}
+      .ksubmit{width:100%;min-height:62px;border-radius:14px;background:var(--gold);color:#1a0f00;border:none;font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;cursor:pointer;margin-top:22px;transition:all .15s}
+      .ksubmit:hover{background:var(--gold2)}
+      .ksubmit:disabled{opacity:.5;cursor:not-allowed}
+      .kstatus{min-height:24px;margin-top:14px;text-align:center;font-size:14px;font-weight:700}
+      .kerr{color:var(--red)}.kok{color:var(--green)}
+      .khidden{display:none!important}
+    </style>
+    <div id="kiosk-wrap">
+      <h1>Welcome</h1>
+      <div class="ksub">Please Sign In</div>
+
+      <div class="kfield"><label>Name</label>
+        <input class="kinput" id="k-name" type="text" inputmode="text" autocapitalize="words" autocomplete="off" placeholder="Enter full name" maxlength="80"/>
+      </div>
+
+      <div class="ksection">
+        <label>Reason for visiting</label>
+        <div class="kpill-group col3" id="k-reasons">
+          <button type="button" class="kpill" data-value="Guest">Guest</button>
+          <button type="button" class="kpill" data-value="Vendor">Vendor</button>
+          <button type="button" class="kpill" data-value="Leasing">Leasing</button>
+        </div>
+      </div>
+
+      <!-- Guest fields -->
+      <div id="k-guest-wrap" class="ksection khidden">
+        <label>Select Tower</label>
+        <div class="kpill-group col2" id="k-guest-tower">
+          <button type="button" class="kpill" data-value="A">A-Tower (405)</button>
+          <button type="button" class="kpill" data-value="B">B-Tower (401)</button>
+        </div>
+        <div class="kfield"><label>Unit #</label>
+          <input class="kinput" id="k-unit" type="text" inputmode="numeric" autocomplete="off" placeholder="Enter unit number" maxlength="4"/>
+          <div class="ktower-note">3 to 4 digits only</div>
+        </div>
+      </div>
+
+      <!-- Vendor fields -->
+      <div id="k-vendor-wrap" class="ksection khidden">
+        <div class="kfield"><label>Company Name</label>
+          <input class="kinput" id="k-company" type="text" autocapitalize="words" autocomplete="off" placeholder="Enter company name" maxlength="80"/>
+        </div>
+        <div class="kfield"><label>Vendor for a resident?</label>
+          <div class="kpill-group col2" id="k-vendor-res">
+            <button type="button" class="kpill" data-value="Yes">Yes</button>
+            <button type="button" class="kpill" data-value="No">No</button>
+          </div>
+        </div>
+        <div id="k-vendor-unit-wrap" class="khidden">
+          <div class="kfield"><label>Select Tower</label>
+            <div class="kpill-group col2" id="k-vendor-tower">
+              <button type="button" class="kpill" data-value="A">A-Tower (405)</button>
+              <button type="button" class="kpill" data-value="B">B-Tower (401)</button>
+            </div>
+          </div>
+          <div class="kfield"><label>Resident Unit #</label>
+            <input class="kinput" id="k-vendor-unit" type="text" inputmode="numeric" autocomplete="off" placeholder="Resident unit number" maxlength="4"/>
+            <div class="ktower-note">3 to 4 digits only</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leasing fields -->
+      <div id="k-leasing-wrap" class="ksection khidden">
+        <label>Do you have an appointment?</label>
+        <div class="kpill-group col2" id="k-leasing-appt">
+          <button type="button" class="kpill" data-value="Yes">Yes</button>
+          <button type="button" class="kpill" data-value="No">No</button>
+        </div>
+      </div>
+
+      <button class="ksubmit" id="k-submit">Submit Sign-In</button>
+      <div id="k-status" class="kstatus"></div>
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--dim)">
+        <span id="k-live-dot" style="color:var(--green)">●</span> Live · Monitored in real time
+      </div>
+    </div>`;
+
+  // --- State ---
+  let kPurpose = '', kGuestTower = '', kVendorRes = '', kVendorTower = '', kLeasingAppt = '';
+  let kSubmitting = false;
+
+  const $id = id => document.getElementById(id);
+
+  function kSetPill(group, value) {
+    $id(group)?.querySelectorAll('.kpill').forEach(b => b.classList.toggle('on', b.dataset.value === value));
+  }
+
+  function kUpdate() {
+    $id('k-guest-wrap').classList.toggle('khidden', kPurpose !== 'Guest');
+    $id('k-vendor-wrap').classList.toggle('khidden', kPurpose !== 'Vendor');
+    $id('k-leasing-wrap').classList.toggle('khidden', kPurpose !== 'Leasing');
+    $id('k-vendor-unit-wrap').classList.toggle('khidden', kVendorRes !== 'Yes');
+  }
+
+  function kStatus(type, msg) {
+    const el = $id('k-status');
+    el.className = 'kstatus ' + (type || '');
+    el.textContent = msg || '';
+  }
+
+  function kDigits(v) { return String(v||'').replace(/\D/g,'').slice(0,4); }
+  function kValidUnit(v) {
+    const d = kDigits(v);
+    if (d.length < 3 || d.length > 4) return false;
+    const fl = parseInt(d.length===4 ? d.slice(0,2) : d.slice(0,1), 10);
+    const rm = parseInt(d.length===4 ? d.slice(2) : d.slice(1), 10);
+    return fl >= 3 && fl <= 15 && rm >= 1 && rm <= 13;
+  }
+  function kBuildUnit(tower, digits) {
+    return tower && kDigits(digits) ? tower + kDigits(digits) : '';
+  }
+
+  // Pill click handlers
+  $id('k-reasons').addEventListener('click', e => {
+    const b = e.target.closest('.kpill'); if(!b) return;
+    kPurpose = b.dataset.value;
+    kSetPill('k-reasons', kPurpose);
+    kGuestTower = ''; kVendorRes = ''; kVendorTower = ''; kLeasingAppt = '';
+    ['k-unit','k-company','k-vendor-unit'].forEach(i => { const el=$id(i); if(el) el.value=''; });
+    ['k-guest-tower','k-vendor-res','k-vendor-tower','k-leasing-appt'].forEach(g => kSetPill(g,''));
+    kUpdate(); kStatus(); kLiveUpdate();
+  });
+
+  $id('k-guest-tower').addEventListener('click', e => {
+    const b = e.target.closest('.kpill'); if(!b) return;
+    kGuestTower = b.dataset.value; kSetPill('k-guest-tower', kGuestTower); kLiveUpdate();
+  });
+
+  $id('k-vendor-res').addEventListener('click', e => {
+    const b = e.target.closest('.kpill'); if(!b) return;
+    kVendorRes = b.dataset.value; kSetPill('k-vendor-res', kVendorRes);
+    if (kVendorRes !== 'Yes') { kVendorTower = ''; kSetPill('k-vendor-tower',''); const el=$id('k-vendor-unit'); if(el)el.value=''; }
+    kUpdate(); kLiveUpdate();
+  });
+
+  $id('k-vendor-tower').addEventListener('click', e => {
+    const b = e.target.closest('.kpill'); if(!b) return;
+    kVendorTower = b.dataset.value; kSetPill('k-vendor-tower', kVendorTower); kLiveUpdate();
+  });
+
+  $id('k-leasing-appt').addEventListener('click', e => {
+    const b = e.target.closest('.kpill'); if(!b) return;
+    kLeasingAppt = b.dataset.value; kSetPill('k-leasing-appt', kLeasingAppt); kLiveUpdate();
+  });
+
+  // Live update (debounced) as user types
+  let kLiveTimer = null;
+  function kLiveUpdate() {
+    clearTimeout(kLiveTimer);
+    kLiveTimer = setTimeout(() => {
+      const liveData = {
+        name: ($id('k-name')?.value||'').trim(),
+        purpose: kPurpose,
+        unit: kBuildUnit(kGuestTower, $id('k-unit')?.value||''),
+        company: ($id('k-company')?.value||'').trim(),
+        vendorResident: kVendorRes,
+        vendorUnit: kBuildUnit(kVendorTower, $id('k-vendor-unit')?.value||''),
+        leasingAppt: kLeasingAppt,
+        _ts: new Date().toISOString()
+      };
+      kioskLiveSet(liveData).catch(()=>{});
+    }, 200);
+  }
+
+  // Input events
+  ['k-name','k-company'].forEach(id => {
+    $id(id)?.addEventListener('input', () => { kStatus(); kLiveUpdate(); });
+  });
+  ['k-unit','k-vendor-unit'].forEach(id => {
+    const el = $id(id);
+    if(!el) return;
+    el.addEventListener('input', () => {
+      const c = kDigits(el.value);
+      if(el.value !== c) el.value = c;
+      kStatus(); kLiveUpdate();
+    });
+  });
+
+  // Submit
+  $id('k-submit').addEventListener('click', async () => {
+    if (kSubmitting) return;
+    kStatus();
+
+    const name = ($id('k-name')?.value||'').trim();
+    if (!name) { kStatus('kerr','Please enter the visitor name.'); return; }
+    if (!kPurpose) { kStatus('kerr','Please select a reason.'); return; }
+
+    if (kPurpose === 'Guest') {
+      if (!kGuestTower) { kStatus('kerr','Please select A-Tower or B-Tower.'); return; }
+      if (!kValidUnit($id('k-unit')?.value||'')) { kStatus('kerr','Please enter a valid unit number.'); return; }
+    }
+    if (kPurpose === 'Vendor') {
+      if (!($id('k-company')?.value||'').trim()) { kStatus('kerr','Please enter the company name.'); return; }
+      if (!kVendorRes) { kStatus('kerr','Please choose whether the vendor is for a resident.'); return; }
+      if (kVendorRes === 'Yes') {
+        if (!kVendorTower) { kStatus('kerr','Please select a tower.'); return; }
+        if (!kValidUnit($id('k-vendor-unit')?.value||'')) { kStatus('kerr','Please enter a valid resident unit number.'); return; }
+      }
+    }
+    if (kPurpose === 'Leasing' && !kLeasingAppt) { kStatus('kerr','Please select whether you have an appointment.'); return; }
+
+    const unitFinal = kPurpose === 'Guest' ? kBuildUnit(kGuestTower, $id('k-unit')?.value||'') : '';
+    const vendorUnitFinal = (kPurpose === 'Vendor' && kVendorRes === 'Yes') ? kBuildUnit(kVendorTower, $id('k-vendor-unit')?.value||'') : '';
+    const company = (kPurpose === 'Vendor') ? ($id('k-company')?.value||'').trim() : '';
+    const noteParts = [
+      kPurpose === 'Vendor' && company ? `Company: ${company}` : null,
+      kVendorRes ? `Vendor for resident: ${kVendorRes}` : null,
+      vendorUnitFinal ? `Vendor unit: ${vendorUnitFinal}` : null,
+      kLeasingAppt ? `Appointment: ${kLeasingAppt}` : null,
+      'kiosk'
+    ].filter(Boolean);
+
+    kSubmitting = true;
+    $id('k-submit').disabled = true;
+    $id('k-submit').textContent = 'Submitting…';
+    kStatus('kok','Submitting…');
+
+    // Save to Supabase visitors table — use anon key so iPad kiosk needs no login
+    const {ok} = await apiPost('visitors', {
+      visitor_name: name,
+      purpose: kPurpose,
+      unit_number: unitFinal,
+      notes: noteParts.join(' · '),
+      sign_in_time: new Date().toISOString(),
+      submitted_by_name: 'Guest Kiosk'
+    }, KEY);
+
+    // Update live state with submitted flag
+    await kioskLiveSet({
+      name, purpose: kPurpose,
+      unit: unitFinal, company,
+      vendorResident: kVendorRes,
+      vendorUnit: vendorUnitFinal,
+      leasingAppt: kLeasingAppt,
+      submitted: true,
+      _ts: new Date().toISOString()
+    });
+
+    if (ok) {
+      kStatus('kok', `✓ ${esc(name)} signed in!`);
+      try { auditLog('KIOSK_SIGN_IN','visitors',{name,purpose:kPurpose,unit:unitFinal}); } catch(e) {}
+      // Reset after 1.2s
+      setTimeout(() => {
+        kSubmitting = false;
+        $id('k-submit').disabled = false;
+        $id('k-submit').textContent = 'Submit Sign-In';
+        // Clear form
+        $id('k-name').value = '';
+        ['k-unit','k-company','k-vendor-unit'].forEach(i => { const el=$id(i); if(el) el.value=''; });
+        kPurpose=''; kGuestTower=''; kVendorRes=''; kVendorTower=''; kLeasingAppt='';
+        ['k-reasons','k-guest-tower','k-vendor-res','k-vendor-tower','k-leasing-appt'].forEach(g => kSetPill(g,''));
+        kUpdate(); kStatus();
+        // Reload today sign-ins if on sign-in page
+        if(vlAll) vlAll = [];
+        kioskLiveClear().catch(()=>{});
+        loadMonitorHistory();
+      }, 1200);
+    } else {
+      kSubmitting = false;
+      $id('k-submit').disabled = false;
+      $id('k-submit').textContent = 'Submit Sign-In';
+      kStatus('kerr','Submit failed. Check console for details.');
+    }
+  });
+
+  kUpdate();
+}
+
+// Start monitor polling as soon as the app boots
+function _startGlobalMonitorPoll() {
+  startMonitorPoll();
+}
+
 </script>
 <!-- AI panel is in topbar -->
 
