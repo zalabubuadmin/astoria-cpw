@@ -1836,7 +1836,8 @@ body.custom{
 <div class="page" id="page-vehicles">
   <div class="panel" style="flex:1">
     <div class="panel-head"><div class="panel-title">Vehicle Registry</div><div class="panel-count" id="veh-count">—</div></div>
-    <div class="search-row"><div class="field" style="flex:1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Plate, unit, make, model, color…" id="veh-q" oninput="filterVeh()"></div></div>
+    <div class="search-row"><div class="field" style="flex:1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" id="veh-show-past" checked onchange="filterVeh()" style="cursor:pointer"> Past residents</label>
+            <input type="text" placeholder="Plate, unit, make, model, color…" id="veh-q" oninput="filterVeh()"></div></div>
     <div class="tbl-wrap"><table><thead><tr><th>Unit</th><th>Plate</th><th>Make</th><th>Model</th><th>Color</th><th>Parking Spot</th></tr></thead><tbody id="veh-body"></tbody></table></div>
 
   </div>
@@ -1904,7 +1905,10 @@ body.custom{
 <div class="page" id="page-vendors">
   <div class="panel" style="flex:1">
     <div class="panel-head"><div class="panel-title">Approved Vendors</div></div>
-    <div class="tbl-wrap"><table><thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Service</th><th>Notes</th></tr></thead><tbody id="vendor-body"></tbody></table></div>
+    <div id="vendor-table-wrap">
+      <!-- Tabs injected here by renderVendorTabbed() on load -->
+      <div class="tbl-wrap"><table><thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Service</th><th>Notes</th></tr></thead><tbody id="vendor-body"></tbody></table></div>
+    </div>
   </div>
 </div>
 
@@ -3601,6 +3605,26 @@ async function submitMove(){
     if(ok){
       resAll[idx]={...r,...updates};
       auditLog(`MOVE_${type.toUpperCase()}`,'residents',{unit:r.unit_number,date,by:currentProfile?.full_name});
+
+      // Update vehicle registry on move-out or vacant
+      if (type === 'out' || type === 'vacant') {
+        await apiPatch('vehicles', `?unit_number=eq.${r.unit_number}`, {
+          status: 'past',
+          move_out_date: date || new Date().toISOString().split('T')[0],
+          move_out_note: type === 'vacant' ? 'Unit marked vacant' : 'Resident moved out'
+        }, sessionToken);
+        vehAll = []; // clear cache so vehicles reload fresh
+      }
+      // On move-in, reactivate any existing vehicles for this unit
+      if (type === 'in') {
+        await apiPatch('vehicles', `?unit_number=eq.${r.unit_number}&status=eq.past`, {
+          status: 'active',
+          move_out_date: null,
+          move_out_note: null
+        }, sessionToken);
+        vehAll = []; // clear cache
+      }
+
       closeOverlay('move-modal');
       openResDrawer(idx);
       renderRes();
@@ -3618,25 +3642,51 @@ let vehAll=[],vehFil=[],vehPg=0;
    Vehicle registry load, filter, render
 ═══════════════════════════════════════════════════════════════════ */
 async function initVeh(){
-  if(!vehAll.length){document.getElementById('veh-body').innerHTML=spinRow(6);const{data}=await api('vehicles','?select=*&order=unit_number.asc&limit=500',sessionToken);vehAll=data.filter(v=>v.license_plate||v.make);}
+  if(!vehAll.length){
+    document.getElementById('veh-body').innerHTML=spinRow(6);
+    const{data}=await api('vehicles','?select=*&order=status.asc,unit_number.asc&limit=500',sessionToken);
+    vehAll=(data||[]).filter(v=>v.license_plate||v.make);
+  }
   filterVeh();
 }
 function filterVeh(){
-  const q=(document.getElementById('veh-q')?.value||'').toLowerCase();
-  const qNorm=normalizeUnit(q.toUpperCase());
-  vehFil=vehAll.filter(v=>!q||[v.unit_number,v.license_plate,v.make,v.model,v.color,v.parking_spot].some(x=>(x||'').toLowerCase().includes(q))||(qNorm&&v.unit_number===qNorm));
-  vehPg=0;renderVeh();
+  const q = (document.getElementById('veh-q')?.value||'').toLowerCase();
+  const showPast = document.getElementById('veh-show-past')?.checked !== false;
+  let filtered = q ? vehAll.filter(v=>
+    (v.unit_number||'').toLowerCase().includes(q)||
+    (v.resident_name||'').toLowerCase().includes(q)||
+    (v.license_plate||'').toLowerCase().includes(q)||
+    (v.make||'').toLowerCase().includes(q)
+  ) : [...vehAll];
+  if (!showPast) filtered = filtered.filter(v => v.status !== 'past');
+  vehFiltered = filtered;
+  renderVeh();
 }
 function renderVeh(){
-  const cnt=document.getElementById('veh-count');if(cnt)cnt.textContent=vehFil.length.toLocaleString();
-  document.getElementById('veh-body').innerHTML=vehFil.length?vehFil.map(v=>`
-    <tr onclick="document.getElementById('pl-q').value='${esc(v.license_plate)}';goPage('plate-lookup');doPlate()">
-      <td class="td-mono td-gold">${esc(v.unit_number)}</td>
-      <td class="td-mono td-bold" style="font-size:14px;letter-spacing:.04em">${esc(v.license_plate)}</td>
-      <td>${esc(v.make)}</td><td class="td-dim">${esc(v.model)}</td><td class="td-dim">${esc(v.color)}</td>
-      <td class="td-mono td-dim td-sm">${esc(v.parking_spot)}</td></tr>`).join(''):emptyRow(6);
-  // infinite scroll — no pagination
+  const tbody=document.getElementById('veh-body');
+  if(!tbody)return;
+  // Separate active and past vehicles
+  const filtered = vehFiltered || vehAll;
+  const active = filtered.filter(v => v.status !== 'past');
+  const past = filtered.filter(v => v.status === 'past');
+  const allSorted = [...active, ...past];
+
+  tbody.innerHTML = allSorted.length ? allSorted.map(v => {
+    const isPast = v.status === 'past';
+    const rowStyle = isPast ? 'opacity:.45;filter:grayscale(.4)' : '';
+    const pastBadge = isPast ? '<span class="chip chip-gray" style="font-size:9px;margin-left:4px">Past Resident</span>' : '';
+    return `<tr style="${rowStyle}" title="${isPast ? 'Past resident — ' + (v.move_out_note||'Moved out') : ''}">
+      <td class="td-mono td-gold">${esc(v.unit_number)}${pastBadge}</td>
+      <td class="td-bold">${esc(v.resident_name||'—')}</td>
+      <td>${esc(v.year||'')} ${esc(v.make||'')} ${esc(v.model||'')}</td>
+      <td class="td-dim">${esc(v.color||'—')}</td>
+      <td class="td-mono">${esc(v.license_plate||'—')}</td>
+      <td class="td-dim td-sm">${esc(v.parking_spot||'—')}</td>
+      <td class="td-dim td-sm">${esc(v.notes||'')}${isPast&&v.move_out_date?'<br><span style="font-size:10px;color:var(--dim)">Moved out: '+v.move_out_date+'</span>':''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--dim)">No vehicles found.</td></tr>';
 }
+
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -3829,11 +3879,22 @@ async function deleteStaffContact(id,name){
    Load vendors — tabbed by category
 ═══════════════════════════════════════════════════════════════════ */
 async function loadVendors(){
-  const{data}=await api('vendors','?select=*&order=service_type.asc,company_name.asc',sessionToken);
-  document.getElementById('vendor-body').innerHTML=data.length?data.map(v=>`<tr><td class="td-bold">${esc(v.company_name)}</td><td class="td-dim">${esc(v.contact_name)}</td><td class="td-mono td-gold">${esc(v.phone)}</td><td class="td-dim td-sm">${esc(v.email)}</td><td><span class="chip chip-gray" style="font-size:10px">${esc(v.service_type)}</span></td><td class="td-dim td-sm td-wrap">${esc(v.notes)}</td></tr>`).join(''):emptyRow(6);
+  const {data} = await api('vendors','?select=*&order=category.asc,company_name.asc',sessionToken);
+  if (!data) return;
+  // Use tabbed rendering grouped by category
   renderVendorTabbed(data);
-
+  // Also populate flat tbody for fallback
+  document.getElementById('vendor-body').innerHTML = data.length ? data.map(v=>`
+    <tr>
+      <td class="td-bold">${esc(v.company_name)}</td>
+      <td class="td-dim">${esc(v.contact_name||'—')}</td>
+      <td class="td-mono td-sm">${esc(v.phone||'—')}</td>
+      <td class="td-dim td-sm">${esc(v.email||'—')}</td>
+      <td><span class="chip chip-gray" style="font-size:10px">${esc(v.service_type||v.category||'—')}</span></td>
+      <td class="td-dim td-sm td-wrap">${esc(v.notes||'')}</td>
+    </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--dim)">No vendors found.</td></tr>';
 }
+
 
 /* ═══════════════════════════════════════════════════════════════════
    CODES & ACCESS
@@ -5812,7 +5873,8 @@ function showStaffTab(dept, btn) {
 function renderVendorTabbed(data) {
   const cats = {};
   (data||[]).forEach(v => {
-    const c = v.category || 'General';
+    // Use category first, then service_type, then 'General'
+    const c = v.category || v.service_type || 'General';
     if (!cats[c]) cats[c] = [];
     cats[c].push(v);
   });
@@ -5843,8 +5905,8 @@ function showVendorTab(cat, btn) {
   el.innerHTML = `<div class="tbl-wrap"><table>
     <thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Notes</th></tr></thead>
     <tbody>${vendors.map(v=>`<tr>
-      <td class="td-bold">${esc(v.name||v.company||'')}</td>
-      <td class="td-dim">${esc(v.contact_name||v.contact||'—')}</td>
+      <td class="td-bold">${esc(v.company_name||v.name||'—')}</td>
+      <td class="td-dim">${esc(v.contact_name||'—')}</td>
       <td class="td-mono td-sm">${esc(v.phone||'—')}</td>
       <td class="td-dim td-sm">${esc(v.email||'—')}</td>
       <td class="td-dim td-sm">${esc(v.notes||'')}</td>
