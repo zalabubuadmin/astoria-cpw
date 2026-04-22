@@ -1878,7 +1878,7 @@ body.custom{
             <button class="btn btn-primary btn-sm" onclick="openAddStaffContact()">✚ Add</button>
           </div>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Dept</th><th>Phone</th><th>Email</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="staff-body"></tbody></table></div>
+        <div id="staff-table-wrap"><div style="text-align:center;padding:20px;color:var(--muted)"><div class="spinner"></div> Loading…</div></div>
       </div>
     </div>
     <div class="col" style="max-width:300px">
@@ -3767,22 +3767,15 @@ let staffData = [];
    Load, add, edit, delete staff contacts — tabbed by department
 ═══════════════════════════════════════════════════════════════════ */
 async function loadStaff(){
+  const container = document.getElementById('staff-table-wrap');
+  if (container) container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)"><div class="spinner"></div> Loading…</div>';
+
   const{data}=await api('staff_contacts','?select=*&order=department.asc,name.asc',sessionToken);
+  if (!data) {
+    if (container) container.innerHTML = '<div style="padding:20px;color:var(--red)">Failed to load staff. Please refresh.</div>';
+    return;
+  }
   staffData = data;
-  const dC=dept=>{if(!dept)return'';if(dept==='Securitas')return`<span class="chip chip-blue">Securitas</span>`;if(dept==='Maintenance')return`<span class="chip chip-amber">Maintenance</span>`;if(dept.includes('Cushman'))return`<span class="chip chip-gold">Management</span>`;if(dept==='CPW')return`<span class="chip chip-green">CPW</span>`;if(dept==='Valet')return`<span class="chip chip-purple">Valet</span>`;if(dept==='Porters')return`<span class="chip chip-gray">Porters</span>`;return`<span class="chip chip-gray">${esc(dept)}</span>`;};
-  const roleLevel={staff:1,supervisor:2,manager:3,admin:4};
-  const canEdit=roleLevel[currentProfile?.role]>=2;
-  document.getElementById('staff-body').innerHTML=data.length?data.map((s,i)=>`
-    <tr>
-      <td class="td-bold">${esc(s.name)}</td>
-      <td class="td-dim">${esc(s.role)}</td>
-      <td>${dC(s.department)}</td>
-      <td class="td-mono td-gold">${esc(s.phone)}</td>
-      <td class="td-dim td-sm">${esc(s.email)}</td>
-      <td class="td-dim td-sm td-wrap">${esc(s.notes)}</td>
-      <td>${canEdit?`<div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="editStaffContact(${i})">✎</button><button class="btn btn-red btn-sm" onclick="deleteStaffContact('${s.id}','${esc(s.name)}')">✕</button></div>`:''}</td>
-    </tr>`).join(''):emptyRow(7);
-  // Inject department tabs above table
   renderStaffTabbed(data);
 }
 
@@ -5848,22 +5841,37 @@ function renderStaffTabbed(data) {
 
 function showStaffTab(dept, btn) {
   document.querySelectorAll('#staff-tabs button').forEach(b => {
-    b.style.borderBottomColor = 'transparent'; b.style.color = 'var(--muted)'; b.style.fontWeight = 400;
+    b.style.borderBottomColor = 'transparent';
+    b.style.color = 'var(--muted)';
+    b.style.fontWeight = 400;
   });
-  if (btn) { btn.style.borderBottomColor = 'var(--gold)'; btn.style.color = 'var(--gold)'; btn.style.fontWeight = 600; }
+  if (btn) {
+    btn.style.borderBottomColor = 'var(--gold)';
+    btn.style.color = 'var(--gold)';
+    btn.style.fontWeight = 600;
+  }
   const members = (window._staffDepts||{})[dept] || [];
   const el = document.getElementById('staff-dept-content');
   if (!el) return;
-  const canEdit = (roleLevel => roleLevel[currentProfile?.role]>=2)({staff:1,supervisor:2,manager:3,admin:4});
+  const canEdit = ({staff:1,supervisor:2,manager:3,admin:4}[currentProfile?.role]||0) >= 2;
+
+  if (!members.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-size:13px">No staff in this department.</div>';
+    return;
+  }
+
   el.innerHTML = `<div class="tbl-wrap"><table>
-    <thead><tr><th>Name</th><th>Title</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
-    <tbody>${members.map(s=>`<tr>
+    <thead><tr><th>Name</th><th>Role/Title</th><th>Phone</th><th>Email</th><th>Notes</th><th>Actions</th></tr></thead>
+    <tbody>${members.map((s,i) => `<tr>
       <td class="td-bold">${esc(s.name)}</td>
-      <td class="td-dim">${esc(s.title||'—')}</td>
+      <td class="td-dim">${esc(s.role||s.title||'—')}</td>
       <td class="td-mono td-sm">${esc(s.phone||'—')}</td>
       <td class="td-dim td-sm">${esc(s.email||'—')}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="editStaffContact('${s.id}')">Edit</button>
-          <button class="btn btn-red btn-sm" onclick="deleteStaffContact('${s.id}','${esc(s.name)}')">Delete</button></td>
+      <td class="td-dim td-sm td-wrap">${esc(s.notes||'')}</td>
+      <td>${canEdit ? `<div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="editStaffContact(${staffData.indexOf(s)})">✎</button>
+        <button class="btn btn-red btn-sm" onclick="deleteStaffContact('${s.id}','${esc(s.name)}')">✕</button>
+      </div>` : '—'}</td>
     </tr>`).join('')}</tbody></table></div>`;
 }
 
